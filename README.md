@@ -8,7 +8,9 @@ In order to achieve reasonable efficiency when drawing to the screen, TotallyLeg
 
 Currently, it is able to wireframe render Suzanne (2904 verts) at 600 fps on my Ryzen 7 5825u, reaching upwards of 900 FPS on my friends Apple M3 chip. Raster is currently WIP.
 
-As this was a school project, I've created this like all other school projects, so build tooling is quite lacking. On Linux, you may run from the project root:
+The princeton algs4 library is required to run this code. You can find algs4.jar here: https://algs4.cs.princeton.edu/code/
+
+As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking. On Linux, you may run from the project root:
 
 ```
 cd src
