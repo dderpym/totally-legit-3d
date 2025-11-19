@@ -25,6 +25,7 @@ public class Main {
     private static long lastFPSTime = System.nanoTime();
     private static int frameCount = 0;
     private static double currentFPS = 0.0;
+    private static int black = TotallyLegit.argb(255, 0, 0, 0);
 
     public static void main(String[] args) {
         StdDraw.setCanvasSize(X, Y);
@@ -148,9 +149,12 @@ public class Main {
             int sxC = (int) ((ndcCx + 1f) * 0.5f * X);
             int syC = (int) ((1f - ndcCy) * 0.5f * Y);
 
-            TotallyLegit.graphics.drawLine(sxA, syA, sxB, syB);
-            TotallyLegit.graphics.drawLine(sxB, syB, sxC, syC);
-            TotallyLegit.graphics.drawLine(sxC, syC, sxA, syA);
+//            TotallyLegit.setRGBFast(sxA, syA, black);
+//            TotallyLegit.setRGBFast(sxB, syB, black);
+//            TotallyLegit.setRGBFast(sxC, syC, black);
+            TotallyLegit.drawLine(sxA, syA, sxB, syB, black);
+            TotallyLegit.drawLine(sxB, syB, sxC, syC, black);
+            TotallyLegit.drawLine(sxC, syC, sxA, syA, black);
         }
 
         TotallyLegit.show();

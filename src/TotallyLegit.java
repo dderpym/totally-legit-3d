@@ -95,4 +95,38 @@ public class TotallyLegit {
     public static int argb(int a, int r, int g, int b) {
        return (a << 24) | (r << 16) | (g << 8) | b;
     }
+
+    public static void drawLine(int x0, int y0, int x1, int y1, int color) {
+        int dx = Math.abs(x1 - x0);
+        int dy = Math.abs(y1 - y0);
+        int sx = x0 < x1 ? 1 : -1;
+        int sy = y0 < y1 ? 1 : -1;
+        int err = dx - dy;
+
+        int[] pixels = TotallyLegit.pixels;
+        int width = TotallyLegit.width;
+
+        // Simple bounds check (optional but safe)
+        if (x0 < 0 || x0 >= width || y0 < 0 || y0 >= height ||
+                x1 < 0 || x1 >= width || y1 < 0 || y1 >= height) {
+        }
+
+        while (true) {
+            if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
+                pixels[y0 * width + x0] = color;
+            }
+
+            if (x0 == x1 && y0 == y1) break;
+
+            int e2 = err * 2;
+            if (e2 > -dy) {
+                err -= dy;
+                x0 += sx;
+            }
+            if (e2 < dx) {
+                err += dx;
+                y0 += sy;
+            }
+        }
+    }
 }
