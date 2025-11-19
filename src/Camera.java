@@ -1,0 +1,87 @@
+import math.Quaternion;
+import math.Vec4;
+import math.Matrix4;
+
+public class Camera {
+    public Vec4 transform;
+    public Quaternion rotation;
+
+    private int X, Y;
+    private float fov;
+    private float zNear;
+
+    private final Matrix4 viewMatrix = new Matrix4();
+    private final Matrix4 perspectiveMatrix = new Matrix4();
+
+    public Camera(int nX, int nY) {
+        transform = new Vec4(0, 0, 0, 1);
+        rotation = new Quaternion(1, 0, 0, 0);
+        X = nX;
+        Y = nY;
+        fov = 70.0f;
+        zNear = 0.5f;
+        rewritePerspective();
+    }
+
+    public Camera(int nX, int nY, Vec4 trans, Quaternion rot) {
+        transform = trans;
+        rotation = rot;
+
+        X = nX;
+        Y = nY;
+        fov = 70.0f;
+        zNear = 0.5f;
+
+        rewritePerspective();
+    }
+
+    public Matrix4 getViewMatrix() {
+        return Matrix4.writeView(transform, rotation, viewMatrix);
+    }
+
+    public void moveTo(Vec4 vec) {
+        this.transform.x = vec.x;
+        this.transform.y = vec.y;
+        this.transform.z = vec.z;
+    }
+
+    public void setRotation(Quaternion q) {
+        rotation.w = q.w;
+        rotation.i = q.i;
+        rotation.j = q.j;
+        rotation.k = q.k;
+    }
+
+    public void rotateBy(Quaternion delta) {
+        rotation.multSelf(delta);
+        rotation.normalizeSelf();
+    }
+
+    public void translateBy(Vec4 vec) {
+        this.transform.addSelf(vec);
+    }
+
+    public Matrix4 getPerspectiveMatrix() {
+        return perspectiveMatrix;
+    }
+
+    public void setFOV(float newFov) {
+        fov = newFov;
+        rewritePerspective();
+    }
+
+    public void setResolution(int newX, int newY) {
+        X = newX;
+        Y = newY;
+        rewritePerspective();
+    }
+
+    public void setZNear(float newZNear) {
+        zNear = newZNear;
+        rewritePerspective();
+    }
+
+    private void rewritePerspective() {
+        Matrix4.writePerspectiveInfinite(fov, (float)X/Y, zNear, perspectiveMatrix);
+    }
+}
