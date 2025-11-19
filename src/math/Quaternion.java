@@ -43,7 +43,7 @@ public class Quaternion {
             return;
         }
 
-        //float invMag = Utility.invSqrt(sq);
+        // float invMag = Utility.invSqrt(sq);
         float invMag = (float) (1/Math.sqrt(sq));
 
         w *= invMag;

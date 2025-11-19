@@ -45,7 +45,7 @@ public final class Vec4 {
         out.x = m.m00 * xx + m.m01 * yy + m.m02 * zz + m.m03;
         out.y = m.m10 * xx + m.m11 * yy + m.m12 * zz + m.m13;
         out.z = m.m20 * xx + m.m21 * yy + m.m22 * zz + m.m23;
-        out.t = 1.0f;  // no perspective
+        out.t = 1.0f;
     }
 
     @Override

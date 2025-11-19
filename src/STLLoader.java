@@ -12,7 +12,6 @@ public class STLLoader {
         File file = new File(filename);
         byte[] allBytes = Files.readAllBytes(file.toPath());
 
-        // Try ASCII first (very rare, but cheap to check)
         String header = new String(allBytes, 0, Math.min(256, allBytes.length), StandardCharsets.UTF_8);
         if (header.startsWith("solid ")) {
             return loadAsciiSTL(header, allBytes);
@@ -24,25 +23,20 @@ public class STLLoader {
     private static Mesh loadBinarySTL(byte[] data) throws IOException {
         ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
-        // Skip 80-byte header
         buf.position(80);
         int triangleCount = buf.getInt();
 
         ArrayList<Tri> tris = new ArrayList<>(triangleCount);
 
         for (int i = 0; i < triangleCount; i++) {
-            // Skip normal (12 bytes)
             buf.getFloat(); buf.getFloat(); buf.getFloat();
 
             Vec4 a = new Vec4(buf.getFloat(), buf.getFloat(), buf.getFloat(), 1f);
             Vec4 b = new Vec4(buf.getFloat(), buf.getFloat(), buf.getFloat(), 1f);
             Vec4 c = new Vec4(buf.getFloat(), buf.getFloat(), buf.getFloat(), 1f);
 
-            // The triangle order in STL is right-handed. If your engine uses left-handed,
-            // either swap b/c or just live with mirrored normals (wireframe doesn't care).
             tris.add(new Tri(a, b, c));
 
-            // Skip attribute (2 bytes)
             buf.getShort();
         }
 
@@ -50,7 +44,6 @@ public class STLLoader {
     }
 
     private static Mesh loadAsciiSTL(String headerLine, byte[] data) throws IOException {
-        // Very forgiving parser — just in case you ever meet an ASCII STL in the wild
         String content = new String(data, StandardCharsets.UTF_8);
         String[] lines = content.split("\n");
 

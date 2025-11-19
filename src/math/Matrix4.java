@@ -130,7 +130,6 @@ public final class Matrix4 {
         float yy = y * y2, yz = y * z2, zz = z * z2;
         float wx = w * x2, wy = w * y2, wz = w * z2;
 
-        // Rotation (transposed because we want inverse rotation)
         out.m00 = 1.0f - (yy + zz);
         out.m01 = xy - wz;
         out.m02 = xz + wy;
@@ -143,7 +142,6 @@ public final class Matrix4 {
         out.m21 = yz + wx;
         out.m22 = 1.0f - (xx + yy);
 
-        // 2. Translation part = -rotation × pos
         float tx = pos.x;
         float ty = pos.y;
         float tz = pos.z;
@@ -152,7 +150,6 @@ public final class Matrix4 {
         out.m13 = -(out.m10 * tx + out.m11 * ty + out.m12 * tz);
         out.m23 = -(out.m20 * tx + out.m21 * ty + out.m22 * tz);
 
-        // Bottom row stays 0,0,0,1
         out.m30 = out.m31 = out.m32 = 0.0f;
         out.m33 = 1.0f;
         return out;

@@ -82,7 +82,6 @@ public class TotallyLegit {
      */
     public static void show() {
         Graphics g = bufferStrategy.getDrawGraphics();
-        // This uses the BufferStrategy's OWN back buffer directly → no copy, no SunGraphics2D
         g.drawImage(image, 0, 0, width, height, null);
         g.dispose();
         bufferStrategy.show();
@@ -106,14 +105,14 @@ public class TotallyLegit {
         int[] pixels = TotallyLegit.pixels;
         int width = TotallyLegit.width;
 
-        // Simple bounds check (optional but safe)
         if (x0 < 0 || x0 >= width || y0 < 0 || y0 >= height ||
                 x1 < 0 || x1 >= width || y1 < 0 || y1 >= height) {
+            // do stuff
         }
 
         while (true) {
             if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
-                pixels[y0 * width + x0] = color;
+                setRGBFast(x0, y0, color);
             }
 
             if (x0 == x1 && y0 == y1) break;
