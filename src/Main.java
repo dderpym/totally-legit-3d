@@ -1,6 +1,7 @@
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.*;
+import java.io.IOException;
 import java.util.Random;
 
 import math.Vec4;
@@ -32,8 +33,14 @@ public class Main {
         StdDraw.enableDoubleBuffering();
         TotallyLegit.init();
 
-        benchmarkMesh = createCubeMesh();
-        benchmarkMesh.translateBy(new Vec4(0, 0, -30, 0));
+        try {
+            benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("gg");
+        }
+        benchmarkMesh.translateBy(new Vec4(0, 0, -10, 0));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);

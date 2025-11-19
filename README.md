@@ -1,4 +1,4 @@
-# TotallyLegit3D - A (hopefully) fast software rasterizer for Java, hijacking Princeton Algorithms StdDraw
+# TotallyLegit3D - A (hopefully) fast software rasterizer for Java, hijacking Princeton Algorithms StdDraw.
 
 This was made as a submission for Project 3 of  UC Berkeley's CS61B.
 
