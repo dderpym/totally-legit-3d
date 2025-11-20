@@ -73,7 +73,7 @@ public class TotallyLegit {
     }
 
     public static void setRGB(int x, int y, int argb) {
-        pixels[getPixelLocation(x, y)] = argb;
+         pixels[getPixelLocation(x, y)] = argb;
     }
 
     /**

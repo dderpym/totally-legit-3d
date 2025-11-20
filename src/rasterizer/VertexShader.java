@@ -5,14 +5,19 @@ import math.Vec4;
 
 public class VertexShader {
     private static int X, Y;
-    private static final Matrix4 VPMatrix = new Matrix4();
-    private static Matrix4 MMatrix;
-    private static final Matrix4 MVPMatrix = new Matrix4();
+
+    private static Matrix4 M;
+    private static Matrix4 V;
+    private static Matrix4 P;
+
+    private static final Matrix4 VP = new Matrix4();
+    private static final Matrix4 MV = new Matrix4();
+    private static final Matrix4 MVP = new Matrix4();
 
     private static final Vec4 transformBuffer = new Vec4();
     private static final Vec4 edgeBuffer0 = new Vec4();
     private static final Vec4 edgeBuffer1 = new Vec4();
-    private static final Vec4 edgeBuffer2 = new Vec4();
+    private static final Vec4 calculationBuffer = new Vec4();
 
     /**
      * Loads the camera (VP matrices) into the vertex shader.
@@ -20,10 +25,10 @@ public class VertexShader {
      * @param camera - The camera to load view and perspectives
      */
     public static void loadCamera(Camera camera) {
-        Matrix4 V = camera.getViewMatrix();
-        Matrix4 P = camera.getPerspectiveMatrix();
+        V = camera.getViewMatrix();
+        P = camera.getPerspectiveMatrix();
 
-        P.mul(V, VPMatrix);
+        P.mul(V, VP);
         X = camera.getResX();
         Y = camera.getResY();
     }
@@ -34,8 +39,9 @@ public class VertexShader {
      * @param mesh - The mesh to load the model matrix
      */
     public static void loadModel(Mesh mesh) {
-        MMatrix = mesh.getModelMatrix();
-        VPMatrix.mul(MMatrix, MVPMatrix);
+        M = mesh.getModelMatrix();
+        VP.mul(M, MVP);
+        V.mul(M, MV);
     }
 
     /**
@@ -44,7 +50,10 @@ public class VertexShader {
      * @param out - array to write output into. format: Ax, Ay, Bx, By, Cx, Cy. Required capacity of 6.
      */
     public static void processTri(Tri tri, VertExport out) {
-        tri.a.transform(MVPMatrix, transformBuffer);
+        tri.a.transform(MV, out.viewA);
+        out.viewA.normalizeSelf();
+
+        tri.a.transform(MVP, transformBuffer);
 
         float invA = 1.0f / transformBuffer.t;
         float ndcxA = transformBuffer.x * invA;
@@ -54,7 +63,7 @@ public class VertexShader {
         out.aY = (int) ((1f - ndcyA) * 0.5f * Y); // flip y cause i guess i gotta
         out.aZ = invA;
 
-        tri.b.transform(MVPMatrix, transformBuffer);
+        tri.b.transform(MVP, transformBuffer);
 
         float invB = 1.0f / transformBuffer.t;
         float ndcxB = transformBuffer.x * invB;
@@ -64,7 +73,7 @@ public class VertexShader {
         out.bY = (int) ((1f - ndcyB) * 0.5f * Y);
         out.bZ = invB;
 
-        tri.c.transform(MVPMatrix, transformBuffer);
+        tri.c.transform(MVP, transformBuffer);
 
         float invC = 1.0f / transformBuffer.t;
         float ndcxC = transformBuffer.x * invC;
@@ -74,12 +83,12 @@ public class VertexShader {
         out.cY = (int) ((1f - ndcyC) * 0.5f * Y);
         out.cZ = invC;
 
-        tri.a.transform(MMatrix, edgeBuffer0);
-        tri.b.transform(MMatrix, edgeBuffer1);
+        tri.a.transform(M, edgeBuffer0);
+        tri.b.transform(M, edgeBuffer1);
         edgeBuffer0.sub(edgeBuffer1, edgeBuffer1);
 
-        tri.c.transform(MMatrix, edgeBuffer2);
-        edgeBuffer0.subSelf(edgeBuffer2);
+        tri.c.transform(M, calculationBuffer);
+        edgeBuffer0.subSelf(calculationBuffer);
 
         edgeBuffer0.normalizeSelf();
         edgeBuffer1.normalizeSelf();
@@ -98,9 +107,11 @@ public class VertexShader {
         public float cZ;
 
         public Vec4 norm;
+        public Vec4 viewA;
 
-        public VertExport(Vec4 nCross) {
+        public VertExport(Vec4 nCross, Vec4 nViewA) {
             norm = nCross;
+            viewA = nViewA;
 
             aX = 0;
             aY = 0;

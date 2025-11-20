@@ -8,7 +8,8 @@ public class PixelShader {
 
     private static final Span span = new Span();  // reused forever, no allocation
     private static final Vec4 crossBuffer = new Vec4();
-    private static final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer);
+    private static final Vec4 viewBuffer = new Vec4();
+    private static final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer, viewBuffer);
 
     private static final Vec4 lightVec = new Vec4(0, 1, -0.5f, 0);
     {
@@ -44,6 +45,8 @@ public class PixelShader {
     }
 
     private static void drawTri() {
+        // backface culling
+        if (verts.norm.dot(verts.viewA) <= -0.1) return;
         int ax = verts.aX, ay = verts.aY;
         int bx = verts.bX, by = verts.bY;
         int cx = verts.cX, cy = verts.cY;
@@ -54,7 +57,7 @@ public class PixelShader {
         int minY = Math.max(0,   Math.min(ay, Math.min(by, cy)));
         int maxY = Math.min(TotallyLegit.height - 1, Math.max(ay, Math.max(by, cy)));
 
-        float dot = Math.clamp(verts.norm.dot(lightVec), 0.1f, 1);
+        float lightLevel = Math.clamp(verts.norm.dot(lightVec), 0.1f, 1);
 
         for (int y = minY; y <= maxY; y++) {
             span.reset();
@@ -82,8 +85,8 @@ public class PixelShader {
 
                     int idx = y * TotallyLegit.width + x;
                     if (z < TotallyLegit.depth[idx]) {
-                        TotallyLegit.pixels[idx] = TotallyLegit.argb(255, (int) (dot * 255), (int) (dot * 255), (int) (dot*255));
-                        TotallyLegit.depth[idx] = z;
+                        TotallyLegit.setRGBFast(idx, TotallyLegit.argb(255, (int) (lightLevel * 255), (int) (lightLevel * 255), (int) (lightLevel*255)));
+                        TotallyLegit.setDepthFast(idx, z);
                     }
                 }
             }
