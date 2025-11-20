@@ -35,13 +35,13 @@ public class Main {
         pixelShader = new PixelShaderMultithreader(4, X, Y);
 
         try {
-            benchmarkMesh = STLLoader.loadSTL("models/dragon.stl");
+            benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -100, 1));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -3, 1));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);
