@@ -69,7 +69,7 @@ public class PixelShader {
             int right = Math.min(TotallyLegit.width - 1, span.right);
             if (left > right) continue;
 
-            for (int x = left; x <= right; x++) {
+            for (int x = left - 1; x <= right + 1; x++) {
                 float px = x;
                 float py = y;
 
