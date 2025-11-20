@@ -29,7 +29,9 @@ public class Main {
         StdDraw.setXscale(0, X);
         StdDraw.setYscale(Y, 0);
         StdDraw.enableDoubleBuffering();
+
         TotallyLegit.init();
+        PixelShader.init(X, Y);
 
         try {
             benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
@@ -79,30 +81,6 @@ public class Main {
                 lastFPSTime = a;
             }
         }
-    }
-
-    private static Mesh createCubeMesh() {
-        Tri[] tris = {
-                // Front
-                new Tri(new Vec4(-1, 1,-1,1), new Vec4( 1, 1,-1,1), new Vec4( 1,-1,-1,1)),
-                new Tri(new Vec4(-1, 1,-1,1), new Vec4( 1,-1,-1,1), new Vec4(-1,-1,-1,1)),
-                // Back
-                new Tri(new Vec4(-1, 1, 1,1), new Vec4( 1,-1, 1,1), new Vec4( 1, 1, 1,1)),
-                new Tri(new Vec4(-1, 1, 1,1), new Vec4(-1,-1, 1,1), new Vec4( 1,-1, 1,1)),
-                // Left
-                new Tri(new Vec4(-1, 1,-1,1), new Vec4(-1,-1,-1,1), new Vec4(-1,-1, 1,1)),
-                new Tri(new Vec4(-1, 1,-1,1), new Vec4(-1,-1, 1,1), new Vec4(-1, 1, 1,1)),
-                // Right
-                new Tri(new Vec4( 1, 1,-1,1), new Vec4( 1,-1, 1,1), new Vec4( 1, 1, 1,1)),
-                new Tri(new Vec4( 1, 1,-1,1), new Vec4( 1,-1,-1,1), new Vec4( 1,-1, 1,1)),
-                // Top
-                new Tri(new Vec4(-1, 1, 1,1), new Vec4( 1, 1, 1,1), new Vec4( 1, 1,-1,1)),
-                new Tri(new Vec4(-1, 1, 1,1), new Vec4( 1, 1,-1,1), new Vec4(-1, 1,-1,1)),
-                // Bottom
-                new Tri(new Vec4(-1,-1,-1,1), new Vec4( 1,-1, 1,1), new Vec4( 1,-1,-1,1)),
-                new Tri(new Vec4(-1,-1,-1,1), new Vec4(-1,-1, 1,1), new Vec4( 1,-1, 1,1)),
-        };
-        return new Mesh(tris);
     }
 
     private static void wireframeRender() {
