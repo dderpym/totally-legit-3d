@@ -80,13 +80,13 @@ public final class Vec4 {
      */
     public void cross(Vec4 o, Vec4 out) {
         out.x = y*o.z - z*o.y;
-        out.y = x*o.z - z*o.x;
+        out.y = z*o.x - x*o.z;
         out.z = x*o.y - y*o.x;
         out.t = 0;
     }
 
     public void normalizeSelf() {
-        float invMag = 1 /(float) Math.sqrt(x*x+y*y+z*z+t*t);
+        float invMag = 1f /(float) Math.sqrt(x*x+y*y+z*z+t*t);
         x = x*invMag;
         y = y*invMag;
         z = z*invMag;

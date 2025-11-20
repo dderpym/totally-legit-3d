@@ -90,10 +90,8 @@ public class VertexShader {
         tri.c.transform(M, calculationBuffer);
         edgeBuffer0.subSelf(calculationBuffer);
 
-        edgeBuffer0.normalizeSelf();
-        edgeBuffer1.normalizeSelf();
-
         edgeBuffer0.cross(edgeBuffer1, out.norm);
+        out.norm.normalizeSelf();
     }
 
     public static class VertExport {

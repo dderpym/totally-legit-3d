@@ -8,7 +8,7 @@ public class PixelShader {
     public final VertexShader vertexShader = new VertexShader();
     private final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer, viewBuffer);
 
-    private final Vec4 lightVec = new Vec4(0, 1, -0.5f, 0);
+    private final Vec4 lightVec = new Vec4(0, -1, -0.5f, 0);
     private int xmin, ymin, xmax, ymax;
 
     {
@@ -150,7 +150,7 @@ public class PixelShader {
 //    }
 
     private void neoDrawTri() {
-        if (verts.norm.dot(verts.viewA) <= -0.1) {
+        if (verts.norm.dot(verts.viewA) <= 0) {
             return;
         }
 
