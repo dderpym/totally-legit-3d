@@ -86,11 +86,11 @@ public final class Vec4 {
     }
 
     public void normalizeSelf() {
-        float mag = (float) Math.sqrt(x*x+y*y+z*z+t*t);
-        x = x/mag;
-        y = y/mag;
-        z = z/mag;
-        t = t/mag;
+        float invMag = 1 /(float) Math.sqrt(x*x+y*y+z*z+t*t);
+        x = x*invMag;
+        y = y*invMag;
+        z = z*invMag;
+        t = t*invMag;
     }
 
     @Override
