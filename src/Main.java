@@ -15,7 +15,7 @@ public class Main {
 
     private static Mesh benchmarkMesh;
     private static Camera benchmarkCamera;
-    private static PixelShader pixelShader;
+    private static PixelShaderMultithreader pixelShader;
 
     private static int[][] randomX;
     private static int[][] randomY;
@@ -32,16 +32,16 @@ public class Main {
         StdDraw.enableDoubleBuffering();
 
         TotallyLegit.init();
-        pixelShader = new PixelShader(0, 0,X, Y);
+        pixelShader = new PixelShaderMultithreader(5, X, Y);
 
         try {
-            benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
+            benchmarkMesh = STLLoader.loadSTL("models/dragon.stl");
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -3, 0));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -100, 1));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);
@@ -85,9 +85,9 @@ public class Main {
     }
 
     private static void render() {
-        VertexShader.loadCamera(benchmarkCamera);
+        pixelShader.loadCamera(benchmarkCamera);
         TotallyLegit.clear();
-        pixelShader.drawMesh(benchmarkMesh);
+        pixelShader.renderFrame(benchmarkMesh);
         TotallyLegit.show();
     }
 

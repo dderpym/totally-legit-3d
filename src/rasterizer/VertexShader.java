@@ -4,27 +4,27 @@ import math.Matrix4;
 import math.Vec4;
 
 public class VertexShader {
-    private static int X, Y;
+    private int X, Y;
 
-    private static Matrix4 M;
-    private static Matrix4 V;
-    private static Matrix4 P;
+    private Matrix4 M;
+    private Matrix4 V;
+    private Matrix4 P;
 
-    private static final Matrix4 VP = new Matrix4();
-    private static final Matrix4 MV = new Matrix4();
-    private static final Matrix4 MVP = new Matrix4();
+    private final Matrix4 VP = new Matrix4();
+    private final Matrix4 MV = new Matrix4();
+    private final Matrix4 MVP = new Matrix4();
 
-    private static final Vec4 transformBuffer = new Vec4();
-    private static final Vec4 edgeBuffer0 = new Vec4();
-    private static final Vec4 edgeBuffer1 = new Vec4();
-    private static final Vec4 calculationBuffer = new Vec4();
+    private final Vec4 transformBuffer = new Vec4();
+    private final Vec4 edgeBuffer0 = new Vec4();
+    private final Vec4 edgeBuffer1 = new Vec4();
+    private final Vec4 calculationBuffer = new Vec4();
 
     /**
      * Loads the camera (VP matrices) into the vertex shader.
      * Will not update MVP if it already has been calculated.
      * @param camera - The camera to load view and perspectives
      */
-    public static void loadCamera(Camera camera) {
+    public void loadCamera(Camera camera) {
         V = camera.getViewMatrix();
         P = camera.getPerspectiveMatrix();
 
@@ -38,7 +38,7 @@ public class VertexShader {
      * Only call *after* loading the camera.
      * @param mesh - The mesh to load the model matrix
      */
-    public static void loadModel(Mesh mesh) {
+    public void loadModel(Mesh mesh) {
         M = mesh.getModelMatrix();
         VP.mul(M, MVP);
         V.mul(M, MV);
@@ -49,7 +49,7 @@ public class VertexShader {
      * @param tri - Triangle to process.
      * @param out - array to write output into. format: Ax, Ay, Bx, By, Cx, Cy. Required capacity of 6.
      */
-    public static void processTri(Tri tri, VertExport out) {
+    public void processTri(Tri tri, VertExport out) {
         tri.a.transform(MV, out.viewA);
         out.viewA.normalizeSelf();
 
