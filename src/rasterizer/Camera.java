@@ -1,3 +1,5 @@
+package rasterizer;
+
 import math.Quaternion;
 import math.Vec4;
 import math.Matrix4;
@@ -74,6 +76,13 @@ public class Camera {
         X = newX;
         Y = newY;
         rewritePerspective();
+    }
+
+    public int getResX() {
+        return X;
+    }
+    public int getResY() {
+        return Y;
     }
 
     public void setZNear(float newZNear) {

@@ -1,3 +1,5 @@
+package rasterizer;
+
 import math.Quaternion;
 import math.Vec4;
 import math.Matrix4;

@@ -1,3 +1,5 @@
+package rasterizer;
+
 import edu.princeton.cs.algs4.StdDraw;
 
 import javax.swing.*;
@@ -14,6 +16,7 @@ import java.util.Arrays;
 **/
 public class TotallyLegit {
     public static int[] pixels;
+    public static float[] depth;
     public static int width, height;
     public static int clearColor;
 
@@ -32,6 +35,8 @@ public class TotallyLegit {
             image = (BufferedImage) bufImg.get(null);
 
             pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+            depth = new float[pixels.length];
+            Arrays.fill(depth, Integer.MAX_VALUE);
             width = image.getWidth();
             height = image.getHeight();
             clearColor = argb(255, 255, 255, 255);
@@ -49,12 +54,13 @@ public class TotallyLegit {
             canvas.setIgnoreRepaint(true);
             frame.setIgnoreRepaint(true);
 
+
             frame.getContentPane().removeAll();
             frame.getContentPane().setLayout(new BorderLayout());
             frame.getContentPane().add(canvas, BorderLayout.CENTER);
             frame.pack();
 
-            canvas.createBufferStrategy(2);
+            canvas.createBufferStrategy(1);
             bufferStrategy = canvas.getBufferStrategy();
 
             frame.setVisible(true);
@@ -66,14 +72,37 @@ public class TotallyLegit {
         }
     }
 
-    public static void setRGBFast(int x, int y, int argb) {
+    public static void setRGB(int x, int y, int argb) {
         pixels[getPixelLocation(x, y)] = argb;
+    }
+
+    /**
+     * For faster setRGB where you know how pixels is structured. Use with care.
+     */
+    public static void setRGBFast(int idx, int argb) {
+        pixels[idx] = argb;
+    }
+
+    public static void setDepth(int x, int y, float z) {
+        depth[getPixelLocation(x, y)] = z;
+    }
+
+    /**
+     * For faster setRGB where you know how pixels is structured. Use with care.
+     */
+    public static void setDepthFast(int idx, float z) {
+        depth[idx] = z;
+    }
+
+    public static float getDepth(int x, int y) {
+        return depth[getPixelLocation(x, y)];
     }
 
     /*
     Yes, seriously.
      */
     public static void clear() {
+        Arrays.fill(depth, Integer.MAX_VALUE);
         Arrays.fill(pixels, clearColor);
     }
 
@@ -112,7 +141,7 @@ public class TotallyLegit {
 
         while (true) {
             if (x0 >= 0 && x0 < width && y0 >= 0 && y0 < height) {
-                setRGBFast(x0, y0, color);
+                setRGB(x0, y0, color);
             }
 
             if (x0 == x1 && y0 == y1) break;

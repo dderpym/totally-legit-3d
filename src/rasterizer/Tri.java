@@ -1,3 +1,5 @@
+package rasterizer;
+
 import math.Vec4;
 /**
  * public fields because i think they're faster (unproven but my vibes say yes)

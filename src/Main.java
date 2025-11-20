@@ -1,3 +1,4 @@
+import rasterizer.*;
 import edu.princeton.cs.algs4.StdDraw;
 
 import java.awt.*;
@@ -6,7 +7,6 @@ import java.util.Random;
 
 import math.Vec4;
 import math.Quaternion;
-import math.Matrix4;
 
 public class Main {
     private static int X = 1000;
@@ -16,17 +16,13 @@ public class Main {
     private static Mesh benchmarkMesh;
     private static Camera benchmarkCamera;
 
-    private static final Matrix4 VPMatrix = new Matrix4();
-    private static final Matrix4 MVPMatrix = new Matrix4();
-
     private static int[][] randomX;
     private static int[][] randomY;
 
     private static long lastFPSTime = System.nanoTime();
     private static int frameCount = 0;
     private static double currentFPS = 0.0;
-    private static int black = TotallyLegit.argb(255, 0, 0, 0);
-    private static int red = TotallyLegit.argb(255, 255, 0, 0);
+
 
     public static void main(String[] args) {
         StdDraw.setCanvasSize(X, Y);
@@ -42,24 +38,20 @@ public class Main {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -10, 0));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -3, 0));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);
-        double startTime = System.nanoTime() * 1e-9;
 
-        int i = 0;
         double last = System.nanoTime() * 1e-9;
         while (true) {
             double now = System.nanoTime() * 1e-9;
             double time = now - last;
             last = now;
 
-            TotallyLegit.clear();
-
-            float angleX = (float) (time * 0.7);
-            float angleY = (float) (time * 1.1);
-            float angleZ = (float) (time * 0.4);
+            float angleX = (float) (time * 1);
+            float angleY = (float) (time * 0.2);
+            float angleZ = (float) (time * 0);
 
             Quaternion rotX = new Quaternion((float) Math.cos(angleX * 0.5), (float) Math.sin(angleX * 0.5), 0, 0);
             Quaternion rotY = new Quaternion((float) Math.cos(angleY * 0.5), 0, (float) Math.sin(angleY * 0.5), 0);
@@ -114,51 +106,9 @@ public class Main {
     }
 
     private static void wireframeRender() {
-        Matrix4 M = benchmarkMesh.getModelMatrix();
-        Matrix4 V = benchmarkCamera.getViewMatrix();
-        Matrix4 P = benchmarkCamera.getPerspectiveMatrix();
-
-        P.mul(V, VPMatrix);
-        VPMatrix.mul(M, MVPMatrix);
-
-        Vec4 a = new Vec4();
-        Vec4 b = new Vec4();
-        Vec4 c = new Vec4();
-
+        VertexShader.loadCamera(benchmarkCamera);
         TotallyLegit.clear();
-
-        for (Tri tri : benchmarkMesh.tris) {
-            tri.a.transformInto(MVPMatrix, a);
-            tri.b.transformInto(MVPMatrix, b);
-            tri.c.transformInto(MVPMatrix, c);
-
-            float invA = 1.0f / a.t;
-            float invB = 1.0f / b.t;
-            float invC = 1.0f / c.t;
-
-            float ndcAx = a.x * invA;
-            float ndcAy = a.y * invA;
-            float ndcBx = b.x * invB;
-            float ndcBy = b.y * invB;
-            float ndcCx = c.x * invC;
-            float ndcCy = c.y * invC;
-
-            int sxA = (int) ((ndcAx + 1f) * 0.5f * X);
-            int syA = (int) ((1f - ndcAy) * 0.5f * Y);   // Y is flipped in StdDraw
-            int sxB = (int) ((ndcBx + 1f) * 0.5f * X);
-            int syB = (int) ((1f - ndcBy) * 0.5f * Y);
-            int sxC = (int) ((ndcCx + 1f) * 0.5f * X);
-            int syC = (int) ((1f - ndcCy) * 0.5f * Y);
-
-            TotallyLegit.drawLine(sxA, syA, sxB, syB, black);
-            TotallyLegit.drawLine(sxB, syB, sxC, syC, black);
-            TotallyLegit.drawLine(sxC, syC, sxA, syA, black);
-
-//            TotallyLegit.graphics.drawLine(sxA, syA, sxB, syB);
-//            TotallyLegit.graphics.drawLine(sxB, syB, sxC, syC);
-//            TotallyLegit.graphics.drawLine(sxC, syC, sxA, syA);
-        }
-
+        PixelShader.drawMesh(benchmarkMesh);
         TotallyLegit.show();
     }
 
@@ -230,7 +180,7 @@ public class Main {
     private static void BenchFastSetRandomSet(int iteration) {
         int black = 0xFF000000;
         for (int i = 0; i < randomX[iteration].length; i++) {
-            TotallyLegit.setRGBFast(randomX[iteration][i], randomY[iteration][i], black);
+            TotallyLegit.setRGB(randomX[iteration][i], randomY[iteration][i], black);
         }
     }
 
