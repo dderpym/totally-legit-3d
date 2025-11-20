@@ -15,6 +15,7 @@ public class Main {
 
     private static Mesh benchmarkMesh;
     private static Camera benchmarkCamera;
+    private static PixelShader pixelShader;
 
     private static int[][] randomX;
     private static int[][] randomY;
@@ -31,7 +32,7 @@ public class Main {
         StdDraw.enableDoubleBuffering();
 
         TotallyLegit.init();
-        PixelShader.init(X, Y);
+        pixelShader = new PixelShader(0, 0,X, Y);
 
         try {
             benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
@@ -66,7 +67,7 @@ public class Main {
             rotX.normalizeSelf();
             benchmarkMesh.setRotation(rotX);
 
-            wireframeRender();
+            render();
 
             frameCount++;
 
@@ -83,10 +84,10 @@ public class Main {
         }
     }
 
-    private static void wireframeRender() {
+    private static void render() {
         VertexShader.loadCamera(benchmarkCamera);
         TotallyLegit.clear();
-        PixelShader.drawMesh(benchmarkMesh);
+        pixelShader.drawMesh(benchmarkMesh);
         TotallyLegit.show();
     }
 

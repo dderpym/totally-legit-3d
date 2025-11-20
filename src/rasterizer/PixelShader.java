@@ -3,26 +3,25 @@ package rasterizer;
 import math.Vec4;
 
 public class PixelShader {
-    private static final int red = TotallyLegit.argb(255, 255, 0, 0);
-    private static final int black = TotallyLegit.argb(255, 0, 0, 0);
+    private final Vec4 crossBuffer = new Vec4();
+    private final Vec4 viewBuffer = new Vec4();
+    private final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer, viewBuffer);
 
-    private static final Vec4 crossBuffer = new Vec4();
-    private static final Vec4 viewBuffer = new Vec4();
-    private static final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer, viewBuffer);
-
-    private static final Vec4 lightVec = new Vec4(0, 1, -0.5f, 0);
-    private static int X, Y;
+    private final Vec4 lightVec = new Vec4(0, 1, -0.5f, 0);
+    private int xmin, ymin, xmax, ymax;
 
     {
         lightVec.normalizeSelf();
     }
 
-    public static void init(int nX, int nY) {
-        X = nX;
-        Y = nY;
+    public PixelShader(int xmin, int ymin, int xmax, int ymax) {
+        this.xmin = xmin;
+        this.ymin = ymin;
+        this.xmax = xmax;
+        this.ymax = ymax;
     }
 
-    public static void drawMesh(Mesh mesh) {
+    public void drawMesh(Mesh mesh) {
         VertexShader.loadModel(mesh);
 
         for (Tri tri : mesh.tris) {
@@ -39,7 +38,7 @@ public class PixelShader {
 //        }
     }
 
-    private static void neoDrawTri() {
+    private void neoDrawTri() {
         if (verts.norm.dot(verts.viewA) <= -0.1) {
             return;
         }
@@ -96,11 +95,11 @@ public class PixelShader {
         float lightLevel = Math.clamp(verts.norm.dot(lightVec), 0.1f, 1);
 
         if (minY != midY) {
-            int yStart = Math.max(0, minY);
-            int yEnd = Math.min(X, midY);
+            int yStart = Math.max(ymin, minY);
+            int yEnd = Math.min(ymax, midY);
             for (int y = yStart; y < yEnd; ++y) {
-                int xStart = Math.max(0, (int) leftBound);
-                int xEnd = Math.min(X, (int) rightBound);
+                int xStart = Math.max(xmin, (int) leftBound);
+                int xEnd = Math.min(xmax, (int) rightBound);
 
                 for (int x = xStart - 1; x < xEnd; ++x) {
                     draw(x, y, lightLevel);
@@ -118,11 +117,11 @@ public class PixelShader {
         invSlopeLeft = (maxX - leftBound) / (maxY - midY);
         invSlopeRight = (maxX - rightBound) / (maxY - midY);
 
-        int yStart = Math.max(0, midY);
-        int yEnd = Math.min(X, maxY);
+        int yStart = Math.max(ymin, midY);
+        int yEnd = Math.min(ymax, maxY);
         for (int y = yStart; y < yEnd; ++y) {
-            int xStart = Math.max(0, (int) leftBound);
-            int xEnd = Math.min(X, (int) rightBound);
+            int xStart = Math.max(xmin, (int) leftBound);
+            int xEnd = Math.min(xmax, (int) rightBound);
 
             for (int x = xStart; x < xEnd; ++x) {
                 draw(x, y, lightLevel);
@@ -133,7 +132,7 @@ public class PixelShader {
         }
     }
 
-    private static void draw(int x, int y, float lightLevel) {
+    private void draw(int x, int y, float lightLevel) {
         float z = 1f/barycentric(x, y,
                 verts.aX, verts.aY, verts.aZ,
                 verts.bX, verts.bY, verts.bZ,
@@ -147,7 +146,7 @@ public class PixelShader {
         }
     }
 
-    private static float barycentric(int x, int y,
+    private float barycentric(int x, int y,
                                      int aX, int aY, float aZ,
                                      int bX, int bY, float bZ,
                                      int cX, int cY, float cZ) {
