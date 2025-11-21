@@ -14,16 +14,19 @@ Despite relying on CPU-only rendering, the engine achieves reasonable performanc
 - Multithreaded raster stage (and planned vertex stage!)
 ## Benchmarks (Ryzen 7 5825U)
 Suzanne (968 triangles): ~350 FPS on 4 threads
-38k-triangle Dragon mesh: ~120 FPS on 4 threads
+![Suzanne rendered](images/suzanne.png)
 ## Multithreading Status
 - Raster Stage: Fully multithreaded
 - Vertex Stage: Currently executed per-thread before raster; refactoring in progress
 
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking.
+I will eventually add proper tooling to this, however, in the meantime:
 
-You can run it like every CS61B student is taught. This means installing IntelliJ Idea, opening it as a project, and then adding the requisite CS61B library.
+### Option 1: IntelliJ (recommended)
+Open the project in IntelliJ and add the CS61B `algs4.jar` library manually.
 
-If you wish to do it on command line, on bash, you may run from the project root:
+### Option 2: Command Line
+From the project root:
 ```
 cd src
 javac -cp ".:/path/to/algs4.jar" *.java math/*.java
