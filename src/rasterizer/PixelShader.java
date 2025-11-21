@@ -35,7 +35,7 @@ public class PixelShader {
                 continue;
             }
 
-            neoDrawTri();
+            drawTri();
         }
 
 //        for (Tri tri : mesh.tris) {
@@ -47,109 +47,7 @@ public class PixelShader {
 //        }
     }
 
-//    private void neoDrawTri() {
-//        if (verts.norm.dot(verts.viewA) <= -0.1) {
-//            return;
-//        }
-//
-//        // a has "priority" for being top. if aY = bY, a wins. if aY = cY, a wins.
-//        int isAMax = (verts.aY >= verts.bY && verts.aY >= verts.cY) ? 1 : 0;
-//        int isBMax = (verts.bY > verts.aY && verts.bY > verts.cY) ? 1 : 0;
-//        int isCMax = 1 - isAMax - isBMax;
-//
-//        int isAMin = (verts.aY <= verts.bY && verts.aY <= verts.cY) ? 1 : 0;
-//        int isBMin = (verts.bY < verts.aY && verts.bY < verts.cY) ? 1 : 0;
-//        int isCMin = 1 - isAMin - isBMin;
-//
-//        int isAMid = 1 - isAMax - isAMin;
-//        int isBMid = 1 - isBMax - isBMin;
-//        int isCMid = 1 - isCMax - isCMin;
-//
-//        int maxX = isAMax * verts.aX + isBMax * verts.bX + isCMax * verts.cX;
-//        int maxY = isAMax * verts.aY + isBMax * verts.bY + isCMax * verts.cY;
-//
-//        int midX = isAMid * verts.aX + isBMid * verts.bX + isCMid * verts.cX;
-//        int midY = isAMid * verts.aY + isBMid * verts.bY + isCMid * verts.cY;
-//
-//        int minX = isAMin * verts.aX + isBMin * verts.bX + isCMin * verts.cX;
-//        int minY = isAMin * verts.aY + isBMin * verts.bY + isCMin * verts.cY;
-//
-//        int dx1 = maxX - minX;
-//        int dy1 = maxY - minY;
-//
-//        int dx2 = midX - minX;
-//        int dy2 = midY - minY;
-//
-//        // Cross product: positive means mid is to the left of the min max vector
-//        int cross = dx1 * dy2 - dy1 * dx2;
-//
-//        int isMaxLeft = (cross < 0) ? 1 : 0;
-//        int isMidLeft = 1 - isMaxLeft;
-//
-//        int isMaxRight = 1 - isMaxLeft;
-//        int isMidRight = 1 - isMidLeft;
-//
-//        int leftX = isMaxLeft * maxX + isMidLeft * midX;
-//        int leftY = isMaxLeft * maxY + isMidLeft * midY;
-//
-//        int rightX = isMaxRight * maxX + isMidRight * midX;
-//        int rightY = isMaxRight * maxY + isMidRight * midY;
-//
-//        float invSlopeLeft = (float) (minX - leftX) / (minY - leftY);
-//        float invSlopeRight = (float) (minX - rightX) / (minY - rightY);
-//
-//        float leftBound = minX;
-//        float rightBound = minX;
-//
-//        float lightLevel = Math.clamp(verts.norm.dot(lightVec), 0.1f, 1);
-//
-//        if (minY != midY) {
-//            int yStart = Math.max(ymin, minY);
-//            int yEnd = Math.min(ymax, midY);
-//
-//            leftBound += (yStart - minY) * invSlopeLeft;
-//            rightBound += (yStart - minY) * invSlopeRight;
-//
-//            for (int y = yStart; y < yEnd; ++y) {
-//                int xStart = Math.max(xmin, (int) leftBound - 1);
-//                int xEnd = Math.min(xmax, (int) rightBound);
-//
-//                for (int x = xStart; x < xEnd; ++x) {
-//                    draw(x, y, lightLevel);
-//                }
-//
-//                leftBound += invSlopeLeft;
-//                rightBound += invSlopeRight;
-//            }
-//        }
-//        else {
-//            leftBound = Math.min(minX, midX);
-//            rightBound = Math.max(minX, midX);
-//        }
-//
-//        invSlopeLeft = (maxX - leftBound) / (maxY - midY);
-//        invSlopeRight = (maxX - rightBound) / (maxY - midY);
-//
-//        int yStart = Math.max(ymin, midY);
-//        int yEnd = Math.min(ymax, maxY);
-//
-//        leftBound += (yStart - midY) * invSlopeLeft;
-//        rightBound += (yStart - midY) * invSlopeRight;
-//
-//        for (int y = yStart; y < yEnd; ++y) {
-//            int xStart = (int) Math.max(xmin, leftBound - 1);
-//            int xEnd = (int) Math.min(xmax, rightBound);
-//
-//            for (int x = xStart; x < xEnd; ++x) {
-//                draw(x, y, lightLevel);
-//            }
-//
-//            leftBound += invSlopeLeft;
-//            rightBound += invSlopeRight;
-//        }
-//    }
-
-    private void neoDrawTri() {
+    private void drawTri() {
         if (verts.norm.dot(verts.viewA) <= 0) {
             return;
         }
@@ -229,8 +127,23 @@ public class PixelShader {
             int xStart = Math.max(xmin, (int) leftBound - 1);
             int xEnd = Math.min(xmax, (int) rightBound);
 
+            float z = 1f/barycentric(xStart, y,
+                    verts.aX, verts.aY, verts.aZ,
+                    verts.bX, verts.bY, verts.bZ,
+                    verts.cX, verts.cY, verts.cZ
+            );
+
+            float zEnd = 1f/barycentric(xEnd, y,
+                    verts.aX, verts.aY, verts.aZ,
+                    verts.bX, verts.bY, verts.bZ,
+                    verts.cX, verts.cY, verts.cZ
+            );
+
+            float zInc = (zEnd-z)/(xEnd-xStart);
+
             for (int x = xStart; x < xEnd; ++x) {
-                draw(x, y, lightLevel);
+                draw(x, y, z, lightLevel);
+                z += zInc;
             }
 
             leftBound += invSlopeLeft;
@@ -238,13 +151,7 @@ public class PixelShader {
         }
     }
 
-    private void draw(int x, int y, float lightLevel) {
-        float z = 1f/barycentric(x, y,
-                verts.aX, verts.aY, verts.aZ,
-                verts.bX, verts.bY, verts.bZ,
-                verts.cX, verts.cY, verts.cZ
-        );
-
+    private void draw(int x, int y, float z, float lightLevel) {
         int idx = y * TotallyLegit.width + x;
         if (z < TotallyLegit.depth[idx]) {
             TotallyLegit.setRGBFast(idx, TotallyLegit.argb(255, (int) (lightLevel * 0), (int) (lightLevel * 255), (int) (lightLevel * 255)));

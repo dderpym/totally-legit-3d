@@ -4,14 +4,25 @@ This was made as a part of a submission for Project 3 of  UC Berkeley's CS61B.
 
 TotallyLegit3D is a 3D software rasterizer that runs in real time on Java swing. It runs entirely on the CPU and is optimized as such. Further, it only uses the Java standard libraries and the Princeton StdDraw library.
 
-In order to achieve reasonable efficiency when drawing to the screen, TotallyLegit3D uses reflections to take out private components of StdDraw, which would otherwise be too slow to render in real time. By doing so, rasterizer.TotallyLegit achieves a ~50x speedup in random pixel writes (235 ms down to 4.5ms for 1 million random writes), and approximately a 2-3x speedup in time to show the image on screen. 
+In order to achieve reasonable efficiency when drawing to the screen, TotallyLegit3D
+uses reflections to take out private components of StdDraw, which would otherwise be too slow to render in real time.
+By doing so, TotallyLegit3D achieves a ~50x speedup in random pixel writes (235 ms down to 4.5ms for
+1 million random writes), and approximately a 2-3x speedup in time to show the image on screen. 
 
-Currently, it is able to wireframe render Suzanne (2904 verts) at 600 fps on my Ryzen 7 5825u, reaching upwards of 900 FPS on my friends Apple M3 chip. Raster is currently WIP.
+Currently, multithreading in TotallyLegit3D is WIP:
+- Raster (Pixel Shader) has been successfully multithreaded.
+- Vertex processing currently runs on every thread prior to raster, which hinders per thread performance. 
+  - I have plans to multithread vertex processing and store in cache, although this will probably not provide anywhere
+    near a straight up n x performance increase.
 
-The princeton algs4 library is required to run this code. You can find algs4.jar here: https://algs4.cs.princeton.edu/code/
+As of the last commit this README was updated, this renders Suzanne (968 tris) at 300 fps on 4 threads on a Ryzen 7 5825u, with roughly similar performance with any number of threads from 1 to 8.
+This also runs a dragon.stl file I stole from the internet (38k tris) at 100 fps on 4 threads on a Ryzen 7 5825u.
+
+The princeton algs4 library is strictly required to run this code without modifications. I plan to release a version that is not dependent on a random university library sometime, but since this is intended to be a project submission, that will be in the future.
+You can find algs4.jar here: https://algs4.cs.princeton.edu/code/
 
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking. On Linux, you may run from the project root:
-
+Alternatively, you can run it like every CS61B student is taught. This means installing IntelliJ Idea, opening it as a project, and then adding the requisite CS61B library.
 ```
 cd src
 javac -cp ".:/path/to/algs4.jar" *.java math/*.java
@@ -20,4 +31,5 @@ To execute, in the src directory, run
 ```
 java -cp ".:/path/to/algs4.jar" src/Main
 ```
-By default it is configured to display Suzanne (included in the repository).
+
+By default it is configured to display Suzanne (included in the repository). You may modify the settings in Main.java.

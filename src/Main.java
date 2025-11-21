@@ -32,7 +32,7 @@ public class Main {
         StdDraw.enableDoubleBuffering();
 
         TotallyLegit.init();
-        pixelShader = new PixelShaderMultithreader(4, X, Y);
+        pixelShader = new PixelShaderMultithreader(7, X, Y);
 
         try {
             benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
