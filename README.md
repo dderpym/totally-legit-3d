@@ -12,9 +12,12 @@ Despite relying on CPU-only rendering, the engine achieves reasonable performanc
 - Uses Java reflection to access private StdDraw buffers, reducing random-pixel-write time from 235 ms → 4.5 ms (~50× faster)
 - Internal buffering that reduces screen-blit time by 2–3×
 - Multithreaded raster stage (and planned vertex stage!)
-## Benchmarks (Ryzen 7 5825U)
-Suzanne (968 triangles): ~350 FPS on 4 threads
+## Benchmarks 
+Suzanne (968 triangles): ~350 FPS (Ryzen 7 5825U, 7 threads)
 ![Suzanne rendered](images/suzanne.png)
+Suzanne (968 triangles): ~800 FPS (Apple Silicon M3, 4 threads)
+
+Dragon (37986 triangles): ~300 FPS (Apple Silicon M3, 4 threads)
 ## Multithreading Status
 - Raster Stage: Fully multithreaded
 - Vertex Stage: Currently executed per-thread before raster; refactoring in progress
