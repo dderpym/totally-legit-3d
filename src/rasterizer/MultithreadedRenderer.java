@@ -3,12 +3,13 @@ package rasterizer;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 
-public class PixelShaderMultithreader {
+public class MultithreadedRenderer {
     private final Thread[] workers;
     private final PixelShader[] shaders;
     private final int numThreads;
 
     private final CyclicBarrier startBarrier;
+    private final CyclicBarrier midDraw;
     private final CyclicBarrier endBarrier;
 
     private volatile Mesh currentMesh;
@@ -16,26 +17,42 @@ public class PixelShaderMultithreader {
     private volatile boolean loadingCamera = false;
     private volatile boolean running = true;
 
-    public PixelShaderMultithreader(int X, int Y) {
+    private VertexShader[] vertexShadersPool;
+    private VertexShader.VertExport[] vertExportPool;
+    private int vertExportPoolSize;
+    private static final int INITIAL_POOL_SIZE = 10000;
+
+    public MultithreadedRenderer(int X, int Y) {
         this(Runtime.getRuntime().availableProcessors(), X, Y);
     }
 
-    public PixelShaderMultithreader(int numThreads, int X, int Y) {
+    public MultithreadedRenderer(int numThreads, int X, int Y) {
         this.numThreads = numThreads;
 
         // Barriers include +1 for main thread
         startBarrier = new CyclicBarrier(numThreads + 1);
+        midDraw = new CyclicBarrier(numThreads + 1);
         endBarrier = new CyclicBarrier(numThreads + 1);
 
         shaders = new PixelShader[numThreads];
+        vertexShadersPool = new VertexShader[numThreads];
         workers = new Thread[numThreads];
+
+        vertExportPool = new VertexShader.VertExport[INITIAL_POOL_SIZE];
+        vertExportPoolSize = vertExportPool.length;
+
+        for (int i = 0; i < vertExportPoolSize; ++i) {
+            vertExportPool[i] = new VertexShader.VertExport();
+        }
 
         int rowsPerThread = Y / numThreads;
 
         for (int i = 0; i < numThreads; i++) {
             int yMin = i * rowsPerThread;
             int yMax = (i == numThreads - 1) ? Y : (i + 1) * rowsPerThread;
+
             shaders[i] = new PixelShader(0, yMin, X, yMax);
+            vertexShadersPool[i] = new VertexShader();
 
             final int threadIndex = i;
             workers[i] = new Thread(() -> workerLoop(threadIndex), "RenderWorker-" + i);
@@ -53,9 +70,23 @@ public class PixelShaderMultithreader {
                 if (!running) break;
 
                 if (loadingCamera) {
-                    shader.vertexShader.loadCamera(currentCamera);
+                    vertexShadersPool[threadIndex].loadCamera(currentCamera);
                 } else {
-                    shader.drawMesh(currentMesh);
+                    vertexShadersPool[threadIndex].loadModel(currentMesh);
+                    int trisPerThread = currentMesh.tris.length  / numThreads;
+                    int startIdx = threadIndex * trisPerThread;
+                    int endIdx = (threadIndex + 1) * trisPerThread;
+
+                    for (int i = startIdx; i < endIdx; ++i) {
+                        vertexShadersPool[threadIndex].processTri(currentMesh.tris[i], vertExportPool[i]);
+                    }
+
+                    midDraw.await();
+
+                    for (int i = 0; i < currentMesh.tris.length; ++i) {
+                        shader.drawVerts(vertExportPool[i]);
+                    }
+
                 }
 
                 endBarrier.await();
@@ -67,13 +98,24 @@ public class PixelShaderMultithreader {
         }
     }
 
-    public void renderFrame(Mesh mesh) {
+    public void renderMesh(Mesh mesh) {
         currentMesh = mesh;
         loadingCamera = false;
 
+        if (mesh.tris.length > vertExportPoolSize) {
+            VertexShader.VertExport[] past = vertExportPool;
+            vertExportPool = new VertexShader.VertExport[mesh.tris.length];
+            System.arraycopy(past, 0, vertExportPool, 0, vertExportPoolSize);
+            for (int i = vertExportPoolSize; i < vertExportPool.length; ++i) {
+                vertExportPool[i] = new VertexShader.VertExport();
+            }
+            vertExportPoolSize = vertExportPool.length;
+        }
+
         try {
-            startBarrier.await();  // Release workers
-            endBarrier.await();    // Wait for completion
+            startBarrier.await();  // Should process vertices
+            midDraw.await();       // Start rasterizing
+            endBarrier.await();    // Wait for completion :/
         } catch (InterruptedException | BrokenBarrierException e) {
             Thread.currentThread().interrupt();
         }

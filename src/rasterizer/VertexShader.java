@@ -107,6 +107,10 @@ public class VertexShader {
         public Vec4 norm;
         public Vec4 viewA;
 
+        public VertExport() {
+            this(new Vec4(0, 0, 0, 0), new Vec4(0, 0, 0, 0));
+        }
+
         public VertExport(Vec4 nCross, Vec4 nViewA) {
             norm = nCross;
             viewA = nViewA;

@@ -6,25 +6,25 @@ import math.Matrix4;
 
 public class Mesh {
     public final Tri[] tris;
+    public final VertexShader.VertExport[] vertExports;
 
     public Vec4 transform;
     public Quaternion rotation;
 
     private final Matrix4 modelMatrix = new Matrix4();
-    private boolean dirty = true; // you dirty little bit (although i guess it's a byte)
+    private boolean dirty = true;
 
     private final Matrix4 cache = new Matrix4();
 
     public Mesh(Tri[] tris) {
-        this.tris = tris;
-        this.transform = new Vec4(0, 0, 0, 1);
-        this.rotation = new Quaternion(1, 0, 0, 0);
+        this(tris, new Vec4(0, 0, 0, 1), new Quaternion(1, 0, 0, 0));
     }
 
     public Mesh(Tri[] tris, Vec4 trans, Quaternion rot) {
         this.tris = tris;
         this.transform = trans;
         this.rotation = rot;
+        this.vertExports = new VertexShader.VertExport[tris.length];
     }
 
     public Matrix4 getModelMatrix() {

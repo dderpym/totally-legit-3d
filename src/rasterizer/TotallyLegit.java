@@ -102,7 +102,7 @@ public class TotallyLegit {
     Yes, seriously.
      */
     public static void clear() {
-        Arrays.fill(depth, Integer.MAX_VALUE);
+        Arrays.fill(depth, Integer.MIN_VALUE);
         Arrays.fill(pixels, clearColor);
     }
 

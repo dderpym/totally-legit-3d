@@ -5,9 +5,6 @@ import math.Vec4;
 public class PixelShader {
     private final Vec4 crossBuffer = new Vec4();
     private final Vec4 viewBuffer = new Vec4();
-    public final VertexShader vertexShader = new VertexShader();
-    private final VertexShader.VertExport verts = new VertexShader.VertExport(crossBuffer, viewBuffer);
-
     private final Vec4 lightVec = new Vec4(0, -1, -0.5f, 0);
     private int xmin, ymin, xmax, ymax;
 
@@ -22,32 +19,18 @@ public class PixelShader {
         this.ymax = ymax;
     }
 
-    public void drawMesh(Mesh mesh) {
-        vertexShader.loadModel(mesh);
-
-        for (Tri tri : mesh.tris) {
-            vertexShader.processTri(tri, verts);
-
+    public void drawVerts(VertexShader.VertExport verts) {
             int minY = Math.min(Math.min(verts.aY, verts.bY), verts.cY);
             int maxY = Math.max(Math.max(verts.aY, verts.bY), verts.cY);
 
             if (maxY < ymin || minY >= ymax) {
-                continue;
+                return;
             }
 
-            drawTri();
-        }
-
-//        for (Tri tri : mesh.tris) {
-//            VertexShader.processTri(tri, verts);
-//
-//            TotallyLegit.drawLine(verts.aX, verts.aY, verts.bX, verts.bY, black);
-//            TotallyLegit.drawLine(verts.bX, verts.bY, verts.cX, verts.cY, black);
-//            TotallyLegit.drawLine(verts.cX, verts.cY, verts.aX, verts.aY, black);
-//        }
+            drawVertsPriv(verts);
     }
 
-    private void drawTri() {
+    private void drawVertsPriv(VertexShader.VertExport verts) {
         if (verts.norm.dot(verts.viewA) <= 0) {
             return;
         }
@@ -94,7 +77,7 @@ public class PixelShader {
             float invSlopeLeft = (float) (minX - leftX) / (minY - leftY);
             float invSlopeRight = (float) (minX - rightX) / (minY - rightY);
 
-            rasterizeSegment(minX, minX, minY, midY, invSlopeLeft, invSlopeRight, lightLevel);
+            rasterizeSegment(verts, minX, minX, minY, midY, invSlopeLeft, invSlopeRight, lightLevel);
         }
 
         float leftBoundAtMid, rightBoundAtMid;
@@ -111,10 +94,10 @@ public class PixelShader {
         float invSlopeLeft2 = (maxX - leftBoundAtMid) / (maxY - midY);
         float invSlopeRight2 = (maxX - rightBoundAtMid) / (maxY - midY);
 
-        rasterizeSegment(leftBoundAtMid, rightBoundAtMid, midY, maxY, invSlopeLeft2, invSlopeRight2, lightLevel);
+        rasterizeSegment(verts, leftBoundAtMid, rightBoundAtMid, midY, maxY, invSlopeLeft2, invSlopeRight2, lightLevel);
     }
 
-    private void rasterizeSegment(float startLeftX, float startRightX, int startY, int endY,
+    private void rasterizeSegment(VertexShader.VertExport verts, float startLeftX, float startRightX, int startY, int endY,
                                   float invSlopeLeft, float invSlopeRight,
                                   float lightLevel) {
         int yStart = Math.max(ymin, startY);
@@ -127,13 +110,13 @@ public class PixelShader {
             int xStart = Math.max(xmin, (int) leftBound - 1);
             int xEnd = Math.min(xmax, (int) rightBound);
 
-            float z = 1f/barycentric(xStart, y,
+            float z = barycentric(xStart, y,
                     verts.aX, verts.aY, verts.aZ,
                     verts.bX, verts.bY, verts.bZ,
                     verts.cX, verts.cY, verts.cZ
             );
 
-            float zEnd = 1f/barycentric(xEnd, y,
+            float zEnd = barycentric(xEnd, y,
                     verts.aX, verts.aY, verts.aZ,
                     verts.bX, verts.bY, verts.bZ,
                     verts.cX, verts.cY, verts.cZ
@@ -153,7 +136,7 @@ public class PixelShader {
 
     private void draw(int x, int y, float z, float lightLevel) {
         int idx = y * TotallyLegit.width + x;
-        if (z < TotallyLegit.depth[idx]) {
+        if (z > TotallyLegit.depth[idx]) {
             TotallyLegit.setRGBFast(idx, TotallyLegit.argb(255, (int) (lightLevel * 0), (int) (lightLevel * 255), (int) (lightLevel * 255)));
             TotallyLegit.setDepthFast(idx, z);
         }

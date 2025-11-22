@@ -16,13 +16,7 @@ public class Camera {
     private final Matrix4 perspectiveMatrix = new Matrix4();
 
     public Camera(int nX, int nY) {
-        transform = new Vec4(0, 0, 0, 1);
-        rotation = new Quaternion(1, 0, 0, 0);
-        X = nX;
-        Y = nY;
-        fov = 70.0f;
-        zNear = 0.5f;
-        rewritePerspective();
+        this(nX, nY, new Vec4(0, 0, 0, 1), new Quaternion(1, 0, 0, 0));
     }
 
     public Camera(int nX, int nY, Vec4 trans, Quaternion rot) {
@@ -31,8 +25,8 @@ public class Camera {
 
         X = nX;
         Y = nY;
-        fov = 70.0f;
-        zNear = 0.5f;
+        fov = 90.0f;
+        zNear = 0.05f;
 
         rewritePerspective();
     }

@@ -15,7 +15,7 @@ public class Main {
 
     private static Mesh benchmarkMesh;
     private static Camera benchmarkCamera;
-    private static PixelShaderMultithreader pixelShader;
+    private static MultithreadedRenderer pixelShader;
 
     private static int[][] randomX;
     private static int[][] randomY;
@@ -32,7 +32,7 @@ public class Main {
         StdDraw.enableDoubleBuffering();
 
         TotallyLegit.init();
-        pixelShader = new PixelShaderMultithreader(7, X, Y);
+        pixelShader = new MultithreadedRenderer(2, X, Y);
 
         try {
             benchmarkMesh = STLLoader.loadSTL("models/Suzanne.stl");
@@ -87,7 +87,7 @@ public class Main {
     private static void render() {
         pixelShader.loadCamera(benchmarkCamera);
         TotallyLegit.clear();
-        pixelShader.renderFrame(benchmarkMesh);
+        pixelShader.renderMesh(benchmarkMesh);
         TotallyLegit.show();
     }
 
