@@ -9,7 +9,7 @@ Despite relying on CPU-only rendering, the engine achieves reasonable performanc
 - Supports STL meshes and configurable render scenes.
 - Barycentric rasterization pipeline with backface culling.
 ## Performance
-- Uses Java reflection to access private StdDraw buffers, reducing random-pixel-write time from 235 ms → 4.5 ms (~50× faster)
+- Uses Java reflection to access private StdDraw buffers, reducing 1 million random-pixel-write time from 235 ms → 4.5 ms (~50× faster)
 - Internal buffering that reduces screen-blit time by 2–3×
 - Multithreaded raster stage (and planned vertex stage!)
 ## Benchmarks 
