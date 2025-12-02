@@ -19,8 +19,10 @@ Suzanne (968 triangles): ~800 FPS (Apple Silicon M3, 4 threads)
 
 Dragon (37986 triangles): ~300 FPS (Apple Silicon M3, 4 threads)
 ## Multithreading Status
-- Raster Stage: Fully multithreaded
-- Vertex Stage: Currently executed per-thread before raster; refactoring in progress
+- Raster Stage: Multithreaded in horizontal strips. Tile rendering with a small cacheable array for better cache locality is planned.
+- Vertex Stage: Fully multithreaded
+
+## Running and building
 
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking.
 I will eventually add proper tooling to this, however, in the meantime:
