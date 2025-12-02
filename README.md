@@ -22,9 +22,14 @@ Suzanne (968 triangles): ~800 FPS (Apple Silicon M3, 4 threads)
 
 Dragon (37986 triangles): 300 FPS (Apple Silicon M3, 4 threads)
 
+## Planned Features
+- Add UV mapping so we can specify textures
+- Implement tile based rendering and use the more optimized parallel streams java library for better cache locality and whatever multithreading advantages java streams will hopefully bring as a big industrial (optimized?) library.
+- Clean up all the public variables to adhere better to standard OOP principles. (we'll see if that affects performance).
+
 ## Multithreading Status
 - Raster Stage: Multithreaded in horizontal strips. Tile rendering with a small cacheable array for better cache locality is planned.
-- Vertex Stage: Fully multithreaded
+- Vertex Stage: Fully multithreaded, although the performance benefit was minimal (cache thrashing?).
 
 ## Running and building
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking.
