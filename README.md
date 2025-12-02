@@ -5,25 +5,28 @@ TotallyLegit3D is a real-time software rasterizer written entirely in Java with 
 Despite relying on CPU-only rendering, the engine achieves reasonable performance under fairly high poly counts.
 
 ## Real-Time CPU Rendering
-- Custom vertex processing, face assembly, rasterization, depth buffering, and color output
+- Custom vertex processing, raster, depth buffering, and color output.
 - Supports STL meshes and configurable render scenes.
-- Barycentric rasterization pipeline with backface culling.
+- Barycentric raster pipeline with backface culling.
 ## Performance
-- Uses Java reflection to access private StdDraw buffers, reducing 1 million random-pixel-write time from 235 ms → 4.5 ms (~50× faster)
-- Internal buffering that reduces screen-blit time by 2–3×
-- Multithreaded raster stage (and planned vertex stage!)
+- Uses Java reflection to access private StdDraw buffers, reducing 1 million random-pixel-write time from 235 ms → 4.5 ms (~50× faster).
+- Internal buffering that reduces screen-blit time by 2–3× (over StdDraw).
+- Multithreaded raster and vertex stage.
 ## Benchmarks 
 Suzanne (968 triangles): ~350 FPS (Ryzen 7 5825U, 7 threads)
 ![Suzanne rendered](images/suzanne.png)
+
+According to my friends benchmarks:
+
 Suzanne (968 triangles): ~800 FPS (Apple Silicon M3, 4 threads)
 
-Dragon (37986 triangles): ~300 FPS (Apple Silicon M3, 4 threads)
+Dragon (37986 triangles): 300 FPS (Apple Silicon M3, 4 threads)
+
 ## Multithreading Status
 - Raster Stage: Multithreaded in horizontal strips. Tile rendering with a small cacheable array for better cache locality is planned.
 - Vertex Stage: Fully multithreaded
 
 ## Running and building
-
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking.
 I will eventually add proper tooling to this, however, in the meantime:
 
