@@ -3,8 +3,7 @@ package rasterizer;
 import math.Vec4;
 
 public class PixelShader {
-    private final Vec4 crossBuffer = new Vec4();
-    private final Vec4 viewBuffer = new Vec4();
+    private final BarycentricWeights weights = new BarycentricWeights(0, 0, 0);
     private final Vec4 lightVec = new Vec4(0, -1, -0.5f, 0);
     private int xmin, ymin, xmax, ymax;
 
@@ -19,7 +18,7 @@ public class PixelShader {
         this.ymax = ymax;
     }
 
-    public void drawVerts(VertexShader.VertExport verts) {
+    public void drawVerts(VertexShader.VertExport verts, UVTexture texture) {
             int minY = Math.min(Math.min(verts.aY, verts.bY), verts.cY);
             int maxY = Math.max(Math.max(verts.aY, verts.bY), verts.cY);
 
@@ -27,10 +26,10 @@ public class PixelShader {
                 return;
             }
 
-            drawVertsPriv(verts);
+            drawVertsPriv(verts, texture);
     }
 
-    private void drawVertsPriv(VertexShader.VertExport verts) {
+    private void drawVertsPriv(VertexShader.VertExport verts, UVTexture texture) {
         if (verts.norm.dot(verts.viewA) <= 0) {
             return;
         }
@@ -77,7 +76,7 @@ public class PixelShader {
             float invSlopeLeft = (float) (minX - leftX) / (minY - leftY);
             float invSlopeRight = (float) (minX - rightX) / (minY - rightY);
 
-            rasterizeSegment(verts, minX, minX, minY, midY, invSlopeLeft, invSlopeRight, lightLevel);
+            rasterizeSegment(verts, minX, minX, minY, midY, invSlopeLeft, invSlopeRight, lightLevel, texture);
         }
 
         float leftBoundAtMid, rightBoundAtMid;
@@ -94,12 +93,12 @@ public class PixelShader {
         float invSlopeLeft2 = (maxX - leftBoundAtMid) / (maxY - midY);
         float invSlopeRight2 = (maxX - rightBoundAtMid) / (maxY - midY);
 
-        rasterizeSegment(verts, leftBoundAtMid, rightBoundAtMid, midY, maxY, invSlopeLeft2, invSlopeRight2, lightLevel);
+        rasterizeSegment(verts, leftBoundAtMid, rightBoundAtMid, midY, maxY, invSlopeLeft2, invSlopeRight2, lightLevel, texture);
     }
 
     private void rasterizeSegment(VertexShader.VertExport verts, float startLeftX, float startRightX, int startY, int endY,
                                   float invSlopeLeft, float invSlopeRight,
-                                  float lightLevel) {
+                                  float lightLevel, UVTexture texture) {
         int yStart = Math.max(ymin, startY);
         int yEnd = Math.min(ymax, endY);
 
@@ -110,23 +109,33 @@ public class PixelShader {
             int xStart = Math.max(xmin, (int) leftBound - 1);
             int xEnd = Math.min(xmax, (int) rightBound);
 
-            float z = barycentric(xStart, y,
-                    verts.aX, verts.aY, verts.aZ,
-                    verts.bX, verts.bY, verts.bZ,
-                    verts.cX, verts.cY, verts.cZ
-            );
+            getBarycentricWeights(xStart, y,
+                    verts.aX, verts.aY,
+                    verts.bX, verts.bY,
+                    verts.cX, verts.cY);
 
-            float zEnd = barycentric(xEnd, y,
-                    verts.aX, verts.aY, verts.aZ,
-                    verts.bX, verts.bY, verts.bZ,
-                    verts.cX, verts.cY, verts.cZ
-            );
+            float invZ = weightedAverage(verts.aInvZ, weights.w_a, verts.bInvZ, weights.w_b, verts.cInvZ, weights.w_c);
+            float UinvZ = weightedAverage(verts.aUinvZ, weights.w_a, verts.bUinvZ, weights.w_b, verts.cUinvZ, weights.w_c);
+            float VinvZ = weightedAverage(verts.aVinvZ, weights.w_a, verts.bVinvZ, weights.w_b, verts.cVinvZ, weights.w_c);
 
-            float zInc = (zEnd-z)/(xEnd-xStart);
+            getBarycentricWeights(xEnd, y,
+                    verts.aX, verts.aY,
+                    verts.bX, verts.bY,
+                    verts.cX, verts.cY);
+
+            float invZEnd = weightedAverage(verts.aInvZ, weights.w_a, verts.bInvZ, weights.w_b, verts.cInvZ, weights.w_c);
+            float UinvZEnd = weightedAverage(verts.aUinvZ, weights.w_a, verts.bUinvZ, weights.w_b, verts.cUinvZ, weights.w_c);
+            float VinvZEnd = weightedAverage(verts.aVinvZ, weights.w_a, verts.bVinvZ, weights.w_b, verts.cVinvZ, weights.w_c);
+
+            float invZInc = (invZEnd-invZ)/(xEnd-xStart);
+            float UinvZInc = (UinvZEnd-UinvZ)/(xEnd-xStart);
+            float VinvZInc = (VinvZEnd-VinvZ)/(xEnd-xStart);
 
             for (int x = xStart; x < xEnd; ++x) {
-                draw(x, y, z, lightLevel);
-                z += zInc;
+                draw(x, y, UinvZ, VinvZ, invZ, lightLevel, texture);
+                invZ += invZInc;
+                UinvZ += UinvZInc;
+                VinvZ += VinvZInc;
             }
 
             leftBound += invSlopeLeft;
@@ -134,40 +143,64 @@ public class PixelShader {
         }
     }
 
-    private void draw(int x, int y, float z, float lightLevel) {
-        int idx = y * TotallyLegit.width + x;
-        if (z > TotallyLegit.depth[idx]) {
-            TotallyLegit.setRGBFast(idx, TotallyLegit.argb(255, (int) (lightLevel * 0), (int) (lightLevel * 255), (int) (lightLevel * 255)));
-            TotallyLegit.setDepthFast(idx, z);
+    public class BarycentricWeights {
+        public float w_a;
+        public float w_b;
+        public float w_c;
+
+        public BarycentricWeights(float wa, float wb, float wc) {
+            this.w_a = wa;
+            this.w_b = wb;
+            this.w_c = wc;
         }
     }
 
-    private float barycentric(int x, int y,
-                                     int aX, int aY, float aZ,
-                                     int bX, int bY, float bZ,
-                                     int cX, int cY, float cZ) {
-        // Compute vectors from A
-        int v0x = cX - aX;
-        int v0y = cY - aY;
-        int v1x = bX - aX;
-        int v1y = bY - aY;
-        int v2x = x - aX;
-        int v2y = y - aY;
+    private void getBarycentricWeights(int x, int y,
+                                       int aX, int aY,
+                                       int bX, int bY,
+                                       int cX, int cY) {
+        int areaTotal = (bX - aX) * (cY - aY) - (cX - aX) * (bY - aY);
 
-        // Compute dot products
-        int dot00 = v0x * v0x + v0y * v0y;
-        int dot01 = v0x * v1x + v0y * v1y;
-        int dot02 = v0x * v2x + v0y * v2y;
-        int dot11 = v1x * v1x + v1y * v1y;
-        int dot12 = v1x * v2x + v1y * v2y;
+        if (areaTotal == 0) {
+            weights.w_a = 0.0f;
+            weights.w_b = 0.0f;
+            weights.w_c = 0.0f;
+            return;
+        }
 
-        // Compute barycentric coordinates
-        float invDenom = 1.0f / (dot00 * dot11 - dot01 * dot01);
-        float w_c = (dot11 * dot02 - dot01 * dot12) * invDenom;
-        float w_b = (dot00 * dot12 - dot01 * dot02) * invDenom;
+        float invAreaTotal = 1.0f / (float)areaTotal;
+
+        int areaABP = (bX - aX) * (y - aY) - (x - aX) * (bY - aY);
+
+        int areaPCA = (cX - aX) * (y - aY) - (x - aX) * (cY - aY);
+
+        float w_c = (float)areaABP * invAreaTotal;
+        float w_b = (float)areaPCA * invAreaTotal;
+
         float w_a = 1.0f - w_b - w_c;
 
-        // Interpolate Z
-        return w_a * aZ + w_b * bZ + w_c * cZ;
+        weights.w_a = w_a;
+        weights.w_b = w_b;
+        weights.w_c = w_c;
+    }
+
+    private float weightedAverage(float a, float aW, float b, float bW, float c, float cW) {
+        return a*aW + b*bW + c*cW;
+    }
+
+    private void draw(int x, int y, float UinvZ, float VinvZ, float invZ, float lightLevel, UVTexture texture) {
+        int idx = y * TotallyLegit.width + x;
+        if (invZ > TotallyLegit.depth[idx]) {
+            TotallyLegit.setRGBFast(idx, dimARGB(texture.getRGBbyUV(UinvZ/invZ, VinvZ/invZ), 1));
+            TotallyLegit.setDepthFast(idx, invZ);
+        }
+    }
+
+    public static int dimARGB(int argb, float factor) {
+        int r = (int) ((((argb >> 16) & 0xFF) * factor) + 0.5f); // +0.5 for rounding
+        int g = (int) ((((argb >> 8) & 0xFF) * factor) + 0.5f);
+        int b = (int) (((argb & 0xFF) * factor) + 0.5f);
+
+        return (argb & 0xFF000000) | (r << 16) | (g << 8) | b;
     }
 }

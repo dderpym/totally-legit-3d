@@ -10,19 +10,19 @@ import java.util.ArrayList;
 
 public class STLLoader {
 
-    public static Mesh loadSTL(String filename) throws IOException {
+    public static Mesh load(String filename) throws IOException {
         File file = new File(filename);
         byte[] allBytes = Files.readAllBytes(file.toPath());
 
         String header = new String(allBytes, 0, Math.min(256, allBytes.length), StandardCharsets.UTF_8);
         if (header.startsWith("solid ")) {
-            return loadAsciiSTL(header, allBytes);
+            return loadAscii(header, allBytes);
         } else {
-            return loadBinarySTL(allBytes);
+            return loadBinary(allBytes);
         }
     }
 
-    private static Mesh loadBinarySTL(byte[] data) throws IOException {
+    private static Mesh loadBinary(byte[] data) throws IOException {
         ByteBuffer buf = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN);
 
         buf.position(80);
@@ -45,7 +45,7 @@ public class STLLoader {
         return new Mesh(tris.toArray(new Tri[0]));
     }
 
-    private static Mesh loadAsciiSTL(String headerLine, byte[] data) throws IOException {
+    private static Mesh loadAscii(String headerLine, byte[] data) throws IOException {
         String content = new String(data, StandardCharsets.UTF_8);
         String[] lines = content.split("\n");
 

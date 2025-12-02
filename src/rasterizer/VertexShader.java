@@ -55,33 +55,44 @@ public class VertexShader {
 
         tri.a.transform(MVP, transformBuffer);
 
-        float invA = 1.0f / transformBuffer.t;
+        float invA = 1.0f / transformBuffer.w;
         float ndcxA = transformBuffer.x * invA;
         float ndcyA = transformBuffer.y * invA;
 
         out.aX = (int) ((ndcxA + 1f) * 0.5f * X);
         out.aY = (int) ((1f - ndcyA) * 0.5f * Y); // flip y cause i guess i gotta
-        out.aZ = invA;
+        out.aUinvZ = tri.aUV.u * invA;
+        out.aVinvZ = tri.aUV.v * invA;
+        out.aW = tri.aUV.w;
+        out.aInvZ = invA;
+
+        System.out.println("w_clip: " + transformBuffer.w + ", invA: " + invA);
 
         tri.b.transform(MVP, transformBuffer);
 
-        float invB = 1.0f / transformBuffer.t;
+        float invB = 1.0f / transformBuffer.w;
         float ndcxB = transformBuffer.x * invB;
         float ndcyB = transformBuffer.y * invB;
 
         out.bX = (int) ((ndcxB + 1f) * 0.5f * X);
         out.bY = (int) ((1f - ndcyB) * 0.5f * Y);
-        out.bZ = invB;
+        out.bUinvZ = tri.bUV.u * invB;
+        out.bVinvZ = tri.bUV.v * invB;
+        out.bW = tri.bUV.w;
+        out.bInvZ = invB;
 
         tri.c.transform(MVP, transformBuffer);
 
-        float invC = 1.0f / transformBuffer.t;
+        float invC = 1.0f / transformBuffer.w;
         float ndcxC = transformBuffer.x * invC;
         float ndcyC = transformBuffer.y * invC;
 
         out.cX = (int) ((ndcxC + 1f) * 0.5f * X);
         out.cY = (int) ((1f - ndcyC) * 0.5f * Y);
-        out.cZ = invC;
+        out.cUinvZ = tri.cUV.u * invC;
+        out.cVinvZ = tri.cUV.v * invC;
+        out.cW = tri.cUV.w;
+        out.cInvZ = invC;
 
         tri.a.transform(M, edgeBuffer0);
         tri.b.transform(M, edgeBuffer1);
@@ -96,13 +107,16 @@ public class VertexShader {
 
     public static class VertExport {
         public int aX, aY;
-        public float aZ;
+        public float aUinvZ, aVinvZ, aW;
+        public float aInvZ;
 
         public int bX, bY;
-        public float bZ;
+        public float bUinvZ, bVinvZ, bW;
+        public float bInvZ;
 
         public int cX, cY;
-        public float cZ;
+        public float cUinvZ, cVinvZ, cW;
+        public float cInvZ;
 
         public Vec4 norm;
         public Vec4 viewA;
@@ -117,15 +131,21 @@ public class VertexShader {
 
             aX = 0;
             aY = 0;
-            aZ = 0;
+            aUinvZ = 0;
+            aVinvZ = 0;
+            aInvZ = 0;
 
             bX = 0;
             bY = 0;
-            bZ = 0;
+            bUinvZ = 0;
+            bVinvZ = 0;
+            bInvZ = 0;
 
             cX = 0;
             cY = 0;
-            cZ = 0;
+            cUinvZ = 0;
+            cVinvZ = 0;
+            cInvZ = 0;
         }
     }
 }
