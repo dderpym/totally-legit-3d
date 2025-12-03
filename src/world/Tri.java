@@ -1,8 +1,8 @@
-package rasterizer;
+package world;
 
 import math.Vec4;
 
-import static rasterizer.UVCoord.DUMMY_UV;
+import static world.UVCoord.DUMMY_UV;
 
 /**
  * public fields because i think they're faster (unproven but my vibes say yes)

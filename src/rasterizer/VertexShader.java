@@ -2,6 +2,8 @@ package rasterizer;
 
 import math.Matrix4;
 import math.Vec4;
+import world.Mesh;
+import world.Tri;
 
 public class VertexShader {
     private int X, Y;

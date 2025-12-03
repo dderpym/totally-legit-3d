@@ -1,3 +1,4 @@
+import los.Raycaster;
 import rasterizer.*;
 import edu.princeton.cs.algs4.StdDraw;
 
@@ -7,6 +8,10 @@ import java.util.Random;
 
 import math.Vec4;
 import math.Quaternion;
+import world.Mesh;
+import world.Tri;
+import world.UVTexture;
+import world.World;
 
 public class Main {
     private static int X = 1000;
@@ -16,14 +21,15 @@ public class Main {
     private static Mesh benchmarkMesh;
     private static Camera benchmarkCamera;
     private static MultithreadedRenderer pixelShader;
+    private static World world;
 
     private static int[][] randomX;
     private static int[][] randomY;
+    private static Raycaster.RaycastResult raycastResult = new Raycaster.RaycastResult();
 
     private static long lastFPSTime = System.nanoTime();
     private static int frameCount = 0;
     private static double currentFPS = 0.0;
-
 
     public static void main(String[] args) {
         StdDraw.setCanvasSize(X, Y);
@@ -33,16 +39,18 @@ public class Main {
 
         TotallyLegit.init();
         pixelShader = new MultithreadedRenderer(8, X, Y);
+        world = new World();
 
         try {
             benchmarkMesh = OBJLoader.load("models/suzanne.obj");
             benchmarkMesh.texture = new UVTexture("models/suzanne.png");
+            world.addMesh(benchmarkMesh);
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -2, 1));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -2, 0));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);
@@ -68,7 +76,7 @@ public class Main {
             rotX.normalizeSelf();
             benchmarkMesh.setRotation(rotX);
 
-            render();
+            Raycaster.lineOfSight(benchmarkMesh.transform, benchmarkCamera.transform, world.meshes, 100f, raycastResult);
 
             frameCount++;
 
@@ -88,7 +96,7 @@ public class Main {
     private static void render() {
         pixelShader.loadCamera(benchmarkCamera);
         TotallyLegit.clear();
-        pixelShader.renderMesh(benchmarkMesh);
+        world.render(pixelShader);
         TotallyLegit.show();
     }
 

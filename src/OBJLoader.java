@@ -1,7 +1,7 @@
 import math.Vec4;
-import rasterizer.Mesh;
-import rasterizer.Tri;
-import rasterizer.UVCoord;
+import world.Mesh;
+import world.Tri;
+import world.UVCoord;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -9,7 +9,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static rasterizer.UVCoord.DUMMY_UV;
+import static world.UVCoord.DUMMY_UV;
 
 public class OBJLoader {
     public static Mesh load(String filename) throws IOException {

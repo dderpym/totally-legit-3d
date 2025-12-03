@@ -1,8 +1,9 @@
-package rasterizer;
+package world;
 
 import math.Quaternion;
 import math.Vec4;
 import math.Matrix4;
+import rasterizer.VertexShader;
 
 public class Mesh {
     private static final UVTexture defaultTexture = new UVTexture("models/default_texture.png");

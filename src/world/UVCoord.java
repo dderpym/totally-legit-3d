@@ -1,4 +1,4 @@
-package rasterizer;
+package world;
 
 public class UVCoord {
     public static UVCoord DUMMY_UV = new UVCoord(0.0f, 0.0f, 0.0f);

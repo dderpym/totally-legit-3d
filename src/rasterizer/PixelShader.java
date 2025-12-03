@@ -1,6 +1,7 @@
 package rasterizer;
 
 import math.Vec4;
+import world.UVTexture;
 
 public class PixelShader {
     private final BarycentricWeights weights = new BarycentricWeights(0, 0, 0);

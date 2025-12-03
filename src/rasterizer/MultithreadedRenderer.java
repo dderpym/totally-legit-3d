@@ -1,5 +1,7 @@
 package rasterizer;
 
+import world.Mesh;
+
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 

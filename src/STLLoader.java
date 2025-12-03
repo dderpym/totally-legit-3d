@@ -1,6 +1,6 @@
 import math.Vec4;
-import rasterizer.Mesh;
-import rasterizer.Tri;
+import world.Mesh;
+import world.Tri;
 
 import java.io.*;
 import java.nio.*;

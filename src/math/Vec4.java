@@ -72,6 +72,10 @@ public final class Vec4 {
         return x * o.x + y * o.y + z * o.z + w * o.w;
     }
 
+    public float magnitude() {
+        return (float) Math.sqrt(this.dot(this));
+    }
+
     /**
      * You may recall the cross product only works in three dimensions. This is correct.
      * We assume that both inputs are vectors (t is 0)
@@ -90,7 +94,21 @@ public final class Vec4 {
         x = x*invMag;
         y = y*invMag;
         z = z*invMag;
-        w = w *invMag;
+        w = w*invMag;
+    }
+
+    public void scale(float factor, Vec4 out) {
+        out.x = x*factor;
+        out.y = y*factor;
+        out.z = z*factor;
+        out.w = w*factor;
+    }
+
+    public void scaleSelf(float factor) {
+        x = x*factor;
+        y = y*factor;
+        z = z*factor;
+        w = w*factor;
     }
 
     @Override
