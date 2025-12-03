@@ -36,7 +36,7 @@ public class Main {
 
         try {
             benchmarkMesh = OBJLoader.load("models/cube.obj");
-            //benchmarkMesh.texture = new UVTexture("models/pencil/pencil.jpg");
+            benchmarkMesh.texture = new UVTexture("models/testure.jpg");
         }
         catch (IOException e) {
             e.printStackTrace();

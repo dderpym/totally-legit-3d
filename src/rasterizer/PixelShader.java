@@ -106,7 +106,7 @@ public class PixelShader {
         float rightBound = startRightX + (yStart - startY) * invSlopeRight;
 
         for (int y = yStart; y < yEnd; ++y) {
-            int xStart = Math.max(xmin, (int) leftBound - 1);
+            int xStart = Math.max(xmin, (int) leftBound);
             int xEnd = Math.min(xmax, (int) rightBound);
 
             getBarycentricWeights(xStart, y,
@@ -118,7 +118,7 @@ public class PixelShader {
             float UinvZ = weightedAverage(verts.aUinvZ, weights.w_a, verts.bUinvZ, weights.w_b, verts.cUinvZ, weights.w_c);
             float VinvZ = weightedAverage(verts.aVinvZ, weights.w_a, verts.bVinvZ, weights.w_b, verts.cVinvZ, weights.w_c);
 
-            getBarycentricWeights(xEnd, y,
+            getBarycentricWeights(xEnd - 1, y,
                     verts.aX, verts.aY,
                     verts.bX, verts.bY,
                     verts.cX, verts.cY);
@@ -153,35 +153,27 @@ public class PixelShader {
             this.w_b = wb;
             this.w_c = wc;
         }
+
+        @Override
+        public String toString() {
+            return "w_a: " + w_a + " w_b: " + w_b +" w_c: " + w_c;
+        }
     }
 
-    private void getBarycentricWeights(int x, int y,
-                                       int aX, int aY,
-                                       int bX, int bY,
-                                       int cX, int cY) {
-        int areaTotal = (bX - aX) * (cY - aY) - (cX - aX) * (bY - aY);
-
-        if (areaTotal == 0) {
-            weights.w_a = 0.0f;
-            weights.w_b = 0.0f;
-            weights.w_c = 0.0f;
+    private void getBarycentricWeights(int x, int y, int ax, int ay, int bx, int by, int cx, int cy) {
+        long area = (long)(bx - ax) * (cy - ay) - (long)(cx - ax) * (by - ay);
+        if (area == 0) {
+            weights.w_a = weights.w_b = weights.w_c = 0;
             return;
         }
 
-        float invAreaTotal = 1.0f / (float)areaTotal;
+        long a = (long)(bx - x) * (cy - y) - (long)(cx - x) * (by - y);
+        long b = (long)(cx - x) * (ay - y) - (long)(ax - x) * (cy - y);
+        long c = (long)(ax - x) * (by - y) - (long)(bx - x) * (ay - y);
 
-        int areaABP = (bX - aX) * (y - aY) - (x - aX) * (bY - aY);
-
-        int areaPCA = (cX - aX) * (y - aY) - (x - aX) * (cY - aY);
-
-        float w_c = (float)areaABP * invAreaTotal;
-        float w_b = (float)areaPCA * invAreaTotal;
-
-        float w_a = 1.0f - w_b - w_c;
-
-        weights.w_a = w_a;
-        weights.w_b = w_b;
-        weights.w_c = w_c;
+        weights.w_a = (float)a / area;
+        weights.w_b = (float)b / area;
+        weights.w_c = (float)c / area;
     }
 
     private float weightedAverage(float a, float aW, float b, float bW, float c, float cW) {
@@ -191,16 +183,34 @@ public class PixelShader {
     private void draw(int x, int y, float UinvZ, float VinvZ, float invZ, float lightLevel, UVTexture texture) {
         int idx = y * TotallyLegit.width + x;
         if (invZ > TotallyLegit.depth[idx]) {
-            TotallyLegit.setRGBFast(idx, dimARGB(texture.getRGBbyUV(UinvZ/invZ, VinvZ/invZ), 1));
+            TotallyLegit.setRGBFast(idx, ARGBDimmer.dimARGB(texture.getRGBbyUV(UinvZ/invZ, VinvZ/invZ), 1));
             TotallyLegit.setDepthFast(idx, invZ);
         }
     }
+    class ARGBDimmer {
+        private static final int[] MUL_TABLE = new int[256 * 256];
+        {
+            for (int i = 0; i < 256; i++) {
+                for (int j = 0; j < 256; j++) {
+                    MUL_TABLE[(j << 8) | i] = (i * j) >> 8;  // fixed-point multiply
+                }
+            }
+        }
 
-    public static int dimARGB(int argb, float factor) {
-        int r = (int) ((((argb >> 16) & 0xFF) * factor) + 0.5f); // +0.5 for rounding
-        int g = (int) ((((argb >> 8) & 0xFF) * factor) + 0.5f);
-        int b = (int) (((argb & 0xFF) * factor) + 0.5f);
+        public static int dimARGB(int argb, float factor) {
+            int f = (int)(factor * 255.0f + 0.5f);
+            if (f >= 255) return argb;
+            if (f <= 0)   return argb & 0xFF000000;
 
-        return (argb & 0xFF000000) | (r << 16) | (g << 8) | b;
+            int r = (argb >> 16) & 0xFF;
+            int g = (argb >>  8) & 0xFF;
+            int b =  argb        & 0xFF;
+
+            r = MUL_TABLE[(f << 8) | r];
+            g = MUL_TABLE[(f << 8) | g];
+            b = MUL_TABLE[(f << 8) | b];
+
+            return (argb & 0xFF000000) | (r << 16) | (g << 8) | b;
+        }
     }
 }

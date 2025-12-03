@@ -51,6 +51,7 @@ public class VertexShader {
      */
     public void processTri(Tri tri, VertExport out) {
         tri.a.transform(MV, out.viewA);
+
         out.viewA.normalizeSelf();
 
         tri.a.transform(MVP, transformBuffer);
@@ -60,13 +61,11 @@ public class VertexShader {
         float ndcyA = transformBuffer.y * invA;
 
         out.aX = (int) ((ndcxA + 1f) * 0.5f * X);
-        out.aY = (int) ((1f - ndcyA) * 0.5f * Y); // flip y cause i guess i gotta
+        out.aY = (int) ((ndcyA + 1f) * 0.5f * Y); // flip y cause i guess i gotta
         out.aUinvZ = tri.aUV.u * invA;
         out.aVinvZ = tri.aUV.v * invA;
         out.aW = tri.aUV.w;
         out.aInvZ = invA;
-
-        System.out.println("w_clip: " + transformBuffer.w + ", invA: " + invA);
 
         tri.b.transform(MVP, transformBuffer);
 
@@ -75,7 +74,7 @@ public class VertexShader {
         float ndcyB = transformBuffer.y * invB;
 
         out.bX = (int) ((ndcxB + 1f) * 0.5f * X);
-        out.bY = (int) ((1f - ndcyB) * 0.5f * Y);
+        out.bY = (int) ((ndcyB + 1f) * 0.5f * Y);
         out.bUinvZ = tri.bUV.u * invB;
         out.bVinvZ = tri.bUV.v * invB;
         out.bW = tri.bUV.w;
@@ -88,7 +87,7 @@ public class VertexShader {
         float ndcyC = transformBuffer.y * invC;
 
         out.cX = (int) ((ndcxC + 1f) * 0.5f * X);
-        out.cY = (int) ((1f - ndcyC) * 0.5f * Y);
+        out.cY = (int) ((ndcyC + 1f) * 0.5f * Y);
         out.cUinvZ = tri.cUV.u * invC;
         out.cVinvZ = tri.cUV.v * invC;
         out.cW = tri.cUV.w;
