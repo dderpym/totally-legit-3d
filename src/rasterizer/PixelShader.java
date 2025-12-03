@@ -4,7 +4,7 @@ import math.Vec4;
 
 public class PixelShader {
     private final BarycentricWeights weights = new BarycentricWeights(0, 0, 0);
-    private final Vec4 lightVec = new Vec4(0, -1, -0.1f, 0);
+    private final Vec4 lightVec = new Vec4(0, -1, -0.2f, 0);
     private int xmin, ymin, xmax, ymax;
 
     {

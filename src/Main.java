@@ -35,14 +35,14 @@ public class Main {
         pixelShader = new MultithreadedRenderer(8, X, Y);
 
         try {
-            benchmarkMesh = OBJLoader.load("models/house.obj");
-            benchmarkMesh.texture = new UVTexture("models/house.png");
+            benchmarkMesh = OBJLoader.load("models/suzanne.obj");
+            benchmarkMesh.texture = new UVTexture("models/suzanne.png");
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -40, 1));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -2, 1));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);
