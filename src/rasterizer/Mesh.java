@@ -10,6 +10,8 @@ public class Mesh {
     public final Tri[] tris;
     public final VertexShader.VertExport[] vertExports;
 
+    public boolean backfaceCulling = false;
+
     public Vec4 transform;
     public Quaternion rotation;
     public UVTexture texture;

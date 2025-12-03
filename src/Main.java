@@ -32,17 +32,17 @@ public class Main {
         StdDraw.enableDoubleBuffering();
 
         TotallyLegit.init();
-        pixelShader = new MultithreadedRenderer(3, X, Y);
+        pixelShader = new MultithreadedRenderer(8, X, Y);
 
         try {
-            benchmarkMesh = OBJLoader.load("models/cube.obj");
-            benchmarkMesh.texture = new UVTexture("models/testure.jpg");
+            benchmarkMesh = OBJLoader.load("models/house.obj");
+            benchmarkMesh.texture = new UVTexture("models/house.png");
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -5, 1));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -30, 1));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);

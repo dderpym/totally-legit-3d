@@ -4,7 +4,7 @@ import math.Vec4;
 
 public class PixelShader {
     private final BarycentricWeights weights = new BarycentricWeights(0, 0, 0);
-    private final Vec4 lightVec = new Vec4(0, -1, -0.5f, 0);
+    private final Vec4 lightVec = new Vec4(0, -1, -0.1f, 0);
     private int xmin, ymin, xmax, ymax;
 
     {
@@ -18,7 +18,7 @@ public class PixelShader {
         this.ymax = ymax;
     }
 
-    public void drawVerts(VertexShader.VertExport verts, UVTexture texture) {
+    public void drawVerts(VertexShader.VertExport verts, UVTexture texture, boolean backfaceCulling) {
             int minY = Math.min(Math.min(verts.aY, verts.bY), verts.cY);
             int maxY = Math.max(Math.max(verts.aY, verts.bY), verts.cY);
 
@@ -26,11 +26,11 @@ public class PixelShader {
                 return;
             }
 
-            drawVertsPriv(verts, texture);
+            drawVertsPriv(verts, texture, backfaceCulling);
     }
 
-    private void drawVertsPriv(VertexShader.VertExport verts, UVTexture texture) {
-        if (verts.norm.dot(verts.viewA) <= 0) {
+    private void drawVertsPriv(VertexShader.VertExport verts, UVTexture texture, boolean backfaceCulling) {
+        if (backfaceCulling && verts.norm.dot(verts.viewA) <= 0) {
             return;
         }
 
@@ -181,12 +181,21 @@ public class PixelShader {
     }
 
     private void draw(int x, int y, float UinvZ, float VinvZ, float invZ, float lightLevel, UVTexture texture) {
-        int idx = y * TotallyLegit.width + x;
+        int idx = TotallyLegit.getPixelLocation(x, y);
         if (invZ > TotallyLegit.depth[idx]) {
-            TotallyLegit.setRGBFast(idx, ARGBDimmer.dimARGB(texture.getRGBbyUV(UinvZ/invZ, VinvZ/invZ), 1));
+            TotallyLegit.setRGBFast(idx, dimARGB(texture.getRGBbyUV(UinvZ/invZ, VinvZ/invZ), lightLevel));
             TotallyLegit.setDepthFast(idx, invZ);
         }
     }
+
+    public static int dimARGB(int argb, float factor) {
+        int r = (int) ((((argb >> 16) & 0xFF) * factor) + 0.5f); // +0.5 for rounding
+        int g = (int) ((((argb >> 8) & 0xFF) * factor) + 0.5f);
+        int b = (int) (((argb & 0xFF) * factor) + 0.5f);
+
+        return (argb & 0xFF000000) | (r << 16) | (g << 8) | b;
+    }
+
     class ARGBDimmer {
         private static final int[] MUL_TABLE = new int[256 * 256];
         {

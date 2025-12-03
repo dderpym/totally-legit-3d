@@ -84,9 +84,8 @@ public class MultithreadedRenderer {
                     midDraw.await();
 
                     for (int i = 0; i < currentMesh.tris.length; ++i) {
-                        shader.drawVerts(vertExportPool[i], currentMesh.texture);
+                        shader.drawVerts(vertExportPool[i], currentMesh.texture, currentMesh.backfaceCulling);
                     }
-
                 }
 
                 endBarrier.await();

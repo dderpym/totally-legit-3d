@@ -117,7 +117,7 @@ public class TotallyLegit {
     }
 
     public static int getPixelLocation(int x, int y) {
-        return y * width + x;
+        return (height-y) * width + x;
     }
 
     public static int argb(int a, int r, int g, int b) {
