@@ -42,7 +42,7 @@ public class Main {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -30, 1));
+        benchmarkMesh.translateBy(new Vec4(0, 0, -40, 1));
         benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
 
         benchmarkCamera = new Camera(X, Y);

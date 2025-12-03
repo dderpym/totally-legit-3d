@@ -15,9 +15,12 @@ Despite relying on CPU-only rendering, the engine achieves reasonable performanc
 - Zero in flight allocation architecture, bypassing GC pressure.
 - Multithreaded raster and vertex stage.
 ## Benchmarks
-Warning: These benchmarks are from a PRE-TEXTURE-MAPPING build. Texture mapping may have reduced performance, although I don't have many textured things to compare to.
+Warning: Some of these benchmarks are from a PRE-TEXTURE-MAPPING build. Texture mapping may have reduced performance, although I don't have many textured things to compare to.
 Suzanne (968 triangles): ~350 FPS (Ryzen 7 5825U, 7 threads)
 ![Suzanne rendered](images/suzanne.png)
+
+House (478 triangles) (textured, no backface culling): ~180 - 230 FPS (Ryzen 7, 5825U, 8 threads)
+![House rendered](images/house.png)
 
 According to my friends benchmarks:
 
