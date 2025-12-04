@@ -94,12 +94,16 @@ public class MultithreadedRenderer {
                     }
 
                     for (int i = startIdx; i < endIdx; ++i) {
-                        vertexShadersPool[threadIndex].processTri(currentMesh.tris[i], vertExportPool[i]);
+                        // write primary output to i; if clipping produces a second triangle
+                        // it'll be written to i + totalTris. Ensure pool is allocated to hold that.
+                        VertexShader.VertExport out2 = (i + totalTris < vertExportPoolSize) ? vertExportPool[i + totalTris] : null;
+                        vertexShadersPool[threadIndex].processTri(currentMesh.tris[i], vertExportPool[i], out2);
                     }
 
                     midDraw.await();
 
-                    for (int i = 0; i < currentMesh.tris.length; ++i) {
+                    // Rasterize entire pool: dead/unused entries have invZ <= 0 and will be skipped in PixelShader
+                    for (int i = 0; i < vertExportPoolSize; ++i) {
                         shader.drawVerts(vertExportPool[i], currentMesh.texture, currentMesh.backfaceCulling);
                     }
                 }
@@ -117,9 +121,11 @@ public class MultithreadedRenderer {
         currentMesh = mesh;
         loadingCamera = false;
 
-        if (mesh.tris.length > vertExportPoolSize) {
+        // Allow space for at most 2 triangles per input triangle (typical for near-plane clipping)
+        int required = mesh.tris.length * 2;
+        if (required > vertExportPoolSize) {
             VertexShader.VertExport[] past = vertExportPool;
-            vertExportPool = new VertexShader.VertExport[mesh.tris.length];
+            vertExportPool = new VertexShader.VertExport[required];
             System.arraycopy(past, 0, vertExportPool, 0, vertExportPoolSize);
             for (int i = vertExportPoolSize; i < vertExportPool.length; ++i) {
                 vertExportPool[i] = new VertexShader.VertExport();
