@@ -34,9 +34,8 @@ public class PixelShader {
     }
 
     private void drawVertsPriv(VertexShader.VertExport verts, UVTexture texture, boolean backfaceCulling) {
-        if (backfaceCulling && verts.norm.dot(verts.viewA) <= 0) {
-            return;
-        }
+        int areaTotal = (verts.bX - verts.aX) * (verts.cY - verts.aY) - (verts.cX - verts.aX) * (verts.bY - verts.aY);
+        if (areaTotal <= 0) return;
 
         // a has "priority" for being top. if aY = bY, a wins. if aY = cY, a wins.
         int isAMax = (verts.aY >= verts.bY && verts.aY >= verts.cY) ? 1 : 0;
@@ -82,7 +81,7 @@ public class PixelShader {
             float invSlopeLeft = (float) (minX - leftX) / (minY - leftY);
             float invSlopeRight = (float) (minX - rightX) / (minY - rightY);
 
-            rasterizeSegment(verts, minX, minX, minY, midY, invSlopeLeft, invSlopeRight, lightLevel, texture);
+            rasterizeSegment(verts, minX, minX, minY, midY, areaTotal, invSlopeLeft, invSlopeRight, lightLevel, texture);
         }
 
         float leftBoundAtMid, rightBoundAtMid;
@@ -99,10 +98,10 @@ public class PixelShader {
         float invSlopeLeft2 = (maxX - leftBoundAtMid) / (maxY - midY);
         float invSlopeRight2 = (maxX - rightBoundAtMid) / (maxY - midY);
 
-        rasterizeSegment(verts, leftBoundAtMid, rightBoundAtMid, midY, maxY, invSlopeLeft2, invSlopeRight2, lightLevel, texture);
+        rasterizeSegment(verts, leftBoundAtMid, rightBoundAtMid, midY, maxY, areaTotal, invSlopeLeft2, invSlopeRight2, lightLevel, texture);
     }
 
-    private void rasterizeSegment(VertexShader.VertExport verts, float startLeftX, float startRightX, int startY, int endY,
+    private void rasterizeSegment(VertexShader.VertExport verts, float startLeftX, float startRightX, int startY, int endY, long areaTotal,
                                   float invSlopeLeft, float invSlopeRight,
                                   float lightLevel, UVTexture texture) {
         int yStart = Math.max(ymin, startY);
@@ -126,7 +125,7 @@ public class PixelShader {
             getBarycentricWeights(xStart, y,
                     verts.aX, verts.aY,
                     verts.bX, verts.bY,
-                    verts.cX, verts.cY);
+                    verts.cX, verts.cY, areaTotal);
 
             float invZ = weightedAverage(verts.aInvZ, weights.w_a, verts.bInvZ, weights.w_b, verts.cInvZ, weights.w_c);
             float UinvZ = weightedAverage(verts.aUinvZ, weights.w_a, verts.bUinvZ, weights.w_b, verts.cUinvZ, weights.w_c);
@@ -135,7 +134,7 @@ public class PixelShader {
             getBarycentricWeights(xEnd - 1, y,
                     verts.aX, verts.aY,
                     verts.bX, verts.bY,
-                    verts.cX, verts.cY);
+                    verts.cX, verts.cY, areaTotal);
 
             float invZEnd = weightedAverage(verts.aInvZ, weights.w_a, verts.bInvZ, weights.w_b, verts.cInvZ, weights.w_c);
             float UinvZEnd = weightedAverage(verts.aUinvZ, weights.w_a, verts.bUinvZ, weights.w_b, verts.cUinvZ, weights.w_c);
@@ -174,8 +173,7 @@ public class PixelShader {
         }
     }
 
-    private void getBarycentricWeights(int x, int y, int ax, int ay, int bx, int by, int cx, int cy) {
-        long area = (long)(bx - ax) * (cy - ay) - (long)(cx - ax) * (by - ay);
+    private void getBarycentricWeights(int x, int y, int ax, int ay, int bx, int by, int cx, int cy, long area) {
         if (area == 0) {
             weights.w_a = weights.w_b = weights.w_c = 0;
             return;
