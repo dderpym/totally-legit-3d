@@ -25,8 +25,8 @@ public class Camera {
 
         X = nX;
         Y = nY;
-        fov = 90.0f;
-        zNear = 0.01f;
+        fov = 50.0f;
+        zNear = 0.69f;
 
         rewritePerspective();
     }
