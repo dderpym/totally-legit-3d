@@ -87,4 +87,20 @@ public class Camera {
     private void rewritePerspective() {
         Matrix4.writePerspectiveInfinite(fov, (float)X/Y, zNear, perspectiveMatrix);
     }
+
+    public Vec4 getForwardDirection() {
+        // Rotation applied to canonical forward vector (0,0,-1) because in most RH systems -Z is forward
+        Quaternion q = rotation;
+        Vec4 forward = new Vec4(0, 0, -1, 0);
+
+        // Rotate forward by camera rotation:  q * v * q conjugate
+        Quaternion v = new Quaternion(0, forward.x, forward.y, forward.z);
+        Quaternion qConj = new Quaternion(q.w, -q.i, -q.j, -q.k);
+
+        Quaternion temp = new Quaternion(1, 0, 0, 0);
+        q.mult(v, temp);
+        temp.mult(qConj, temp);
+
+        return new Vec4(temp.i, temp.j, temp.k, 0);
+    }
 }

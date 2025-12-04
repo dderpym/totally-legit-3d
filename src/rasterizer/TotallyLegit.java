@@ -43,7 +43,7 @@ public class TotallyLegit {
 
             Field graphik = StdDraw.class.getDeclaredField("offscreen");
             graphik.setAccessible(true);
-            graphics = (Graphics2D) graphik.get(null);
+            graphics = image.createGraphics();
 
             Field frameField = StdDraw.class.getDeclaredField("frame");
             frameField.setAccessible(true);

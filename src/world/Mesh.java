@@ -8,6 +8,7 @@ import rasterizer.VertexShader;
 public class Mesh {
     public final Tri[] tris;
     public final VertexShader.VertExport[] vertExports;
+    public String name = "mesh";
 
     public boolean backfaceCulling = true;
 
