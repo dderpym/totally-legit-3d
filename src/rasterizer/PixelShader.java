@@ -26,6 +26,9 @@ public class PixelShader {
             if (maxY < ymin || minY >= ymax) {
                 return;
             }
+            if (verts.aInvZ <= 0 || verts.bInvZ <= 0 || verts.cInvZ <= 0) {
+                return;
+            }
 
             drawVertsPriv(verts, texture, backfaceCulling);
     }
