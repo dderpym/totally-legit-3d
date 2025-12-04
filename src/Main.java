@@ -32,7 +32,6 @@ public class Main {
     private static double currentFPS = 0.0;
 
     public static void main(String[] args) {
-        StdDraw.setCanvasSize(X, Y);
         StdDraw.setXscale(0, X);
         StdDraw.setYscale(Y, 0);
         StdDraw.enableDoubleBuffering();

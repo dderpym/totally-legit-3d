@@ -53,7 +53,7 @@ public final class Raycaster {
         to.sub(from, dir);
         float fullDistance = dir.magnitude();
         if (fullDistance > maxRange) {
-            out.clear = false;
+            out.clear = true;
             return;
         }
         if (fullDistance < 0.001f) {
@@ -83,7 +83,6 @@ public final class Raycaster {
                 // Möller–Trumbore
                 dir.cross(e2, h);
                 float det = e1.dot(h);
-                if (det > -0.00001f && det < 0.00001f) continue; // parallel
 
                 float invDet = 1f / det;
                 from.sub(v0, s);                    // vector from v0 to ray origin
@@ -96,11 +95,10 @@ public final class Raycaster {
                 if (v < 0f || u + v > 1f) continue;
 
                 float t = invDet * e2.dot(q);
-                if (t > 0.05f && t < closestT && t < fullDistance * 0.99f) {
+                if (t > 0.001f && t < closestT && t <= fullDistance) {
                     closestT = t;
                     closestMesh = mesh;
 
-                    // Compute world-space hit point: from + dir * t
                     dir.scale(t, temp);
                     from.add(temp, closestHit); // creates new Vec4 — but we reuse below
                 }
@@ -109,7 +107,6 @@ public final class Raycaster {
 
         if (closestMesh != null) {
             out.clear = false;
-            out.hit = true;
             out.mesh = closestMesh;
             out.distance = closestT;
             out.t = closestT / fullDistance;

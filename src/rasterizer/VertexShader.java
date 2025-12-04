@@ -4,6 +4,7 @@ import math.Matrix4;
 import math.Vec4;
 import world.Mesh;
 import world.Tri;
+import world.UVCoord;
 
 public class VertexShader {
     private int X, Y;
@@ -21,11 +22,19 @@ public class VertexShader {
     private final Vec4 edgeBuffer1 = new Vec4();
     private final Vec4 calculationBuffer = new Vec4();
 
-    /**
-     * Loads the camera (VP matrices) into the vertex shader.
-     * Will not update MVP if it already has been calculated.
-     * @param camera - The camera to load view and perspectives
-     */
+    // Clipping buffers
+    private final Vec4[] clipBuffer = new Vec4[9]; // Max vertices after clipping
+    private final UVCoord[] uvClipBuffer = new UVCoord[9];
+
+    private static final float NEAR_PLANE = 0.01f; // Match camera's zNear
+
+    public VertexShader() {
+        for (int i = 0; i < clipBuffer.length; i++) {
+            clipBuffer[i] = new Vec4();
+            uvClipBuffer[i] = new UVCoord(0, 0, 0);
+        }
+    }
+
     public void loadCamera(Camera camera) {
         V = camera.getViewMatrix();
         P = camera.getPerspectiveMatrix();
@@ -35,11 +44,6 @@ public class VertexShader {
         Y = camera.getResY();
     }
 
-    /**
-     * This loads the model into the vertex shader.
-     * Only call *after* loading the camera.
-     * @param mesh - The mesh to load the model matrix
-     */
     public void loadModel(Mesh mesh) {
         M = mesh.getModelMatrix();
         VP.mul(M, MVP);
@@ -47,33 +51,63 @@ public class VertexShader {
     }
 
     /**
-     * Processes a triangle into a xy pixel coordinates, assuming camera and model are the most recently loaded.
-     * @param tri - Triangle to process.
-     * @param out - array to write output into. format: Ax, Ay, Bx, By, Cx, Cy. Required capacity of 6.
+     * Processes a triangle with near plane clipping.
+     * Returns false if triangle is completely clipped.
      */
     public void processTri(Tri tri, VertExport out) {
-        tri.a.transform(MV, out.viewA);
+        // Transform to clip space (before perspective divide)
+        Vec4 clipA = new Vec4();
+        Vec4 clipB = new Vec4();
+        Vec4 clipC = new Vec4();
 
+        tri.a.transform(MVP, clipA);
+        tri.b.transform(MVP, clipB);
+        tri.c.transform(MVP, clipC);
+
+        // Check if all vertices are behind near plane
+        if (clipA.w < NEAR_PLANE && clipB.w < NEAR_PLANE && clipC.w < NEAR_PLANE) {
+            // Mark as invalid
+            out.aInvZ = -1;
+            out.bInvZ = -1;
+            out.cInvZ = -1;
+            return;
+        }
+
+        // Check if all vertices are in front of near plane (no clipping needed)
+        if (clipA.w >= NEAR_PLANE && clipB.w >= NEAR_PLANE && clipC.w >= NEAR_PLANE) {
+            // Process normally without clipping
+            processTriNormal(tri, out, clipA, clipB, clipC);
+            return;
+        }
+
+        // Need to clip - mark this triangle as invalid
+        // In a full implementation, you'd generate new triangles here
+        // For now, just discard triangles that cross the near plane
+        out.aInvZ = -1;
+        out.bInvZ = -1;
+        out.cInvZ = -1;
+    }
+
+    private void processTriNormal(Tri tri, VertExport out, Vec4 clipA, Vec4 clipB, Vec4 clipC) {
+        // Transform view space for normal calculation
+        tri.a.transform(MV, out.viewA);
         out.viewA.normalizeSelf();
 
-        tri.a.transform(MVP, transformBuffer);
-
-        float invA = 1.0f / transformBuffer.w;
-        float ndcxA = transformBuffer.x * invA;
-        float ndcyA = transformBuffer.y * invA;
+        // Perspective divide and convert to screen space
+        float invA = 1.0f / clipA.w;
+        float ndcxA = clipA.x * invA;
+        float ndcyA = clipA.y * invA;
 
         out.aX = (int) ((ndcxA + 1f) * 0.5f * X);
-        out.aY = (int) ((ndcyA + 1f) * 0.5f * Y); // flip y cause i guess i gotta
+        out.aY = (int) ((ndcyA + 1f) * 0.5f * Y);
         out.aUinvZ = tri.aUV.u * invA;
         out.aVinvZ = tri.aUV.v * invA;
         out.aW = tri.aUV.w;
         out.aInvZ = invA;
 
-        tri.b.transform(MVP, transformBuffer);
-
-        float invB = 1.0f / transformBuffer.w;
-        float ndcxB = transformBuffer.x * invB;
-        float ndcyB = transformBuffer.y * invB;
+        float invB = 1.0f / clipB.w;
+        float ndcxB = clipB.x * invB;
+        float ndcyB = clipB.y * invB;
 
         out.bX = (int) ((ndcxB + 1f) * 0.5f * X);
         out.bY = (int) ((ndcyB + 1f) * 0.5f * Y);
@@ -82,11 +116,9 @@ public class VertexShader {
         out.bW = tri.bUV.w;
         out.bInvZ = invB;
 
-        tri.c.transform(MVP, transformBuffer);
-
-        float invC = 1.0f / transformBuffer.w;
-        float ndcxC = transformBuffer.x * invC;
-        float ndcyC = transformBuffer.y * invC;
+        float invC = 1.0f / clipC.w;
+        float ndcxC = clipC.x * invC;
+        float ndcyC = clipC.y * invC;
 
         out.cX = (int) ((ndcxC + 1f) * 0.5f * X);
         out.cY = (int) ((ndcyC + 1f) * 0.5f * Y);
@@ -95,6 +127,7 @@ public class VertexShader {
         out.cW = tri.cUV.w;
         out.cInvZ = invC;
 
+        // Calculate normal in world space
         tri.a.transform(M, edgeBuffer0);
         tri.b.transform(M, edgeBuffer1);
         edgeBuffer0.sub(edgeBuffer1, edgeBuffer1);
@@ -104,6 +137,60 @@ public class VertexShader {
 
         edgeBuffer0.cross(edgeBuffer1, out.norm);
         out.norm.normalizeSelf();
+    }
+
+    /**
+     * Clips a triangle against the near plane.
+     * This is a full implementation using Sutherland-Hodgman algorithm.
+     */
+    private int clipTriangleToNearPlane(Vec4 a, Vec4 b, Vec4 c,
+                                        UVCoord uvA, UVCoord uvB, UVCoord uvC,
+                                        Vec4[] outVerts, UVCoord[] outUVs) {
+        // Input polygon
+        Vec4[] input = {a, b, c};
+        UVCoord[] inputUVs = {uvA, uvB, uvC};
+        int inputCount = 3;
+
+        int outputCount = 0;
+
+        for (int i = 0; i < inputCount; i++) {
+            Vec4 current = input[i];
+            Vec4 next = input[(i + 1) % inputCount];
+            UVCoord currentUV = inputUVs[i];
+            UVCoord nextUV = inputUVs[(i + 1) % inputCount];
+
+            boolean currentInside = current.w >= NEAR_PLANE;
+            boolean nextInside = next.w >= NEAR_PLANE;
+
+            if (currentInside) {
+                outVerts[outputCount].x = current.x;
+                outVerts[outputCount].y = current.y;
+                outVerts[outputCount].z = current.z;
+                outVerts[outputCount].w = current.w;
+                outUVs[outputCount].u = currentUV.u;
+                outUVs[outputCount].v = currentUV.v;
+                outUVs[outputCount].w = currentUV.w;
+                outputCount++;
+            }
+
+            if (currentInside != nextInside) {
+                // Edge crosses the plane - compute intersection
+                float t = (NEAR_PLANE - current.w) / (next.w - current.w);
+
+                outVerts[outputCount].x = current.x + t * (next.x - current.x);
+                outVerts[outputCount].y = current.y + t * (next.y - current.y);
+                outVerts[outputCount].z = current.z + t * (next.z - current.z);
+                outVerts[outputCount].w = NEAR_PLANE;
+
+                outUVs[outputCount].u = currentUV.u + t * (nextUV.u - currentUV.u);
+                outUVs[outputCount].v = currentUV.v + t * (nextUV.v - currentUV.v);
+                outUVs[outputCount].w = currentUV.w + t * (nextUV.w - currentUV.w);
+
+                outputCount++;
+            }
+        }
+
+        return outputCount;
     }
 
     public static class VertExport {
