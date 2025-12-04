@@ -1,3 +1,5 @@
+package loaders;
+
 import math.Vec4;
 import world.Mesh;
 import world.Tri;
@@ -115,6 +117,6 @@ public class OBJLoader {
             }
         }
 
-        return new Mesh(tris.toArray(new Tri[0]));
+        return new Mesh(tris.toArray(new Tri[0]), null);
     }
 }

@@ -6,12 +6,10 @@ import math.Matrix4;
 import rasterizer.VertexShader;
 
 public class Mesh {
-    private static final UVTexture defaultTexture = new UVTexture("models/default_texture.png");
-
     public final Tri[] tris;
     public final VertexShader.VertExport[] vertExports;
 
-    public boolean backfaceCulling = false;
+    public boolean backfaceCulling = true;
 
     public Vec4 transform;
     public Quaternion rotation;
@@ -21,10 +19,6 @@ public class Mesh {
     private boolean dirty = true;
 
     private final Matrix4 cache = new Matrix4();
-
-    public Mesh(Tri[] tris) {
-        this(tris, new Vec4(0, 0, 0, 1), new Quaternion(1, 0, 0, 0), defaultTexture);
-    }
 
     public Mesh(Tri[] tris, UVTexture texture) {
         this(tris, new Vec4(0, 0, 0, 1), new Quaternion(1, 0, 0, 0), texture);

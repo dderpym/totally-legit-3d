@@ -71,7 +71,9 @@ public class PixelShader {
         int rightX = ((1 - isMaxLeft) * maxX + (1 - isMidLeft) * midX);
         int rightY = ((1 - isMaxLeft) * maxY + (1 - isMidLeft) * midY);
 
-        float lightLevel = Math.clamp(verts.norm.dot(lightVec), 0.1f, 1);
+        float dot = verts.norm.dot(lightVec);
+        dot = backfaceCulling ? dot : Math.abs(dot);
+        float lightLevel = Math.clamp(dot, 0.1f, 1);
 
         if (minY != midY) {
             float invSlopeLeft = (float) (minX - leftX) / (minY - leftY);
@@ -108,7 +110,15 @@ public class PixelShader {
 
         for (int y = yStart; y < yEnd; ++y) {
             int xStart = Math.max(xmin, (int) leftBound);
-            int xEnd = Math.min(xmax, (int) rightBound);
+            int xEnd = Math.min(xmax, (int) Math.ceil(rightBound));
+
+            int span = xEnd - xStart;
+            if (span <= 0) {
+                // Nothing to draw on this scanline, skip remaining calculations
+                leftBound += invSlopeLeft;
+                rightBound += invSlopeRight;
+                continue;
+            }
 
             getBarycentricWeights(xStart, y,
                     verts.aX, verts.aY,

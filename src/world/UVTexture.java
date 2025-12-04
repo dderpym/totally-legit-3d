@@ -30,7 +30,7 @@ public class UVTexture {
 
     public final int getRGBbyUV(float u, float v) {
         int tx = (int)(u * Xf + 0.5f)  % X;
-        int ty = (int)((1.0f - v) * Yf + 0.5f) % X;
+        int ty = (int)((1.0f - v) * Yf + 0.5f) % Y;
         if (tx < 0) tx += X;
         if (ty < 0) ty += Y;
         return pixels[ty * X + tx];

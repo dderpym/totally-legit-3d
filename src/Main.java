@@ -1,3 +1,4 @@
+import loaders.OBJLoader;
 import los.Raycaster;
 import rasterizer.*;
 import edu.princeton.cs.algs4.StdDraw;
@@ -9,7 +10,6 @@ import java.util.Random;
 import math.Vec4;
 import math.Quaternion;
 import world.Mesh;
-import world.Tri;
 import world.UVTexture;
 import world.World;
 
@@ -42,16 +42,18 @@ public class Main {
         world = new World();
 
         try {
-            benchmarkMesh = OBJLoader.load("models/suzanne.obj");
-            benchmarkMesh.texture = new UVTexture("models/suzanne.png");
+            benchmarkMesh = OBJLoader.load("models/quad.obj");
+            benchmarkMesh.texture = new UVTexture("models/default_texture.png");
             world.addMesh(benchmarkMesh);
         }
         catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("gg");
         }
-        benchmarkMesh.translateBy(new Vec4(0, 0, -2, 0));
-        benchmarkMesh.rotation = new Quaternion(0.577f, 0.577f, 0.577f, 0);
+
+        benchmarkMesh.translateBy(new Vec4(0, -1, -2, 0));
+        benchmarkMesh.setRotation(new Quaternion(1, 0, 0, 0));
+        benchmarkMesh.backfaceCulling = false;
 
         benchmarkCamera = new Camera(X, Y);
 
@@ -73,10 +75,9 @@ public class Main {
             rotX.mult(rotY, temp);
             temp.mult(rotZ, rotX);
 
-            rotX.normalizeSelf();
             benchmarkMesh.setRotation(rotX);
 
-            Raycaster.lineOfSight(benchmarkMesh.transform, benchmarkCamera.transform, world.meshes, 100f, raycastResult);
+            render();
 
             frameCount++;
 

@@ -1,3 +1,5 @@
+package loaders;
+
 import math.Vec4;
 import world.Mesh;
 import world.Tri;
@@ -42,7 +44,7 @@ public class STLLoader {
             buf.getShort();
         }
 
-        return new Mesh(tris.toArray(new Tri[0]));
+        return new Mesh(tris.toArray(new Tri[0]), null);
     }
 
     private static Mesh loadAscii(String headerLine, byte[] data) throws IOException {
@@ -70,6 +72,6 @@ public class STLLoader {
             }
         }
 
-        return new Mesh(tris.toArray(new Tri[0]));
+        return new Mesh(tris.toArray(new Tri[0]), null);
     }
 }

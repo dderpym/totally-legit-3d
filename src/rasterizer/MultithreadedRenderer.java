@@ -75,9 +75,23 @@ public class MultithreadedRenderer {
                     vertexShadersPool[threadIndex].loadCamera(currentCamera);
                 } else {
                     vertexShadersPool[threadIndex].loadModel(currentMesh);
-                    int trisPerThread = currentMesh.tris.length  / numThreads;
+                    int totalTris = currentMesh.tris.length;
+                    int trisPerThread = totalTris / numThreads;
                     int startIdx = threadIndex * trisPerThread;
-                    int endIdx = (threadIndex + 1) * trisPerThread;
+                    int endIdx;
+
+                    if (threadIndex == numThreads - 1) {
+                        // Last thread gets the base amount PLUS all the leftover remainder
+                        endIdx = totalTris;
+                    } else {
+                        // All other threads get just the base amount
+                        endIdx = (threadIndex + 1) * trisPerThread;
+                    }
+
+                    if (startIdx >= totalTris) {
+                        startIdx = totalTris;
+                        endIdx = totalTris;
+                    }
 
                     for (int i = startIdx; i < endIdx; ++i) {
                         vertexShadersPool[threadIndex].processTri(currentMesh.tris[i], vertExportPool[i]);
