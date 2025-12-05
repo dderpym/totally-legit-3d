@@ -89,18 +89,15 @@ public class Camera {
     }
 
     public Vec4 getForwardDirection() {
-        // Rotation applied to canonical forward vector (0,0,-1) because in most RH systems -Z is forward
-        Quaternion q = rotation;
+        // Get the rotation matrix and extract the forward direction from it
+        Matrix4 rotMatrix = Matrix4.newRotation(rotation);
+
+        // In camera/view space, forward is (0, 0, -1)
+        // Transform it by the rotation to get world space forward
         Vec4 forward = new Vec4(0, 0, -1, 0);
+        forward.transformSelf(rotMatrix);
+        forward.normalizeSelf();
 
-        // Rotate forward by camera rotation:  q * v * q conjugate
-        Quaternion v = new Quaternion(0, forward.x, forward.y, forward.z);
-        Quaternion qConj = new Quaternion(q.w, -q.i, -q.j, -q.k);
-
-        Quaternion temp = new Quaternion(1, 0, 0, 0);
-        q.mult(v, temp);
-        temp.mult(qConj, temp);
-
-        return new Vec4(temp.i, temp.j, temp.k, 0);
+        return forward;
     }
 }

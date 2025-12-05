@@ -6,9 +6,9 @@ import math.Matrix4;
 import rasterizer.VertexShader;
 
 public class Mesh {
-    public final Tri[] tris;
+    public Tri[] tris;
     public final VertexShader.VertExport[] vertExports;
-    public String name = "mesh";
+    public Object data;
 
     public boolean backfaceCulling = true;
 
