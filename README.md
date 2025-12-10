@@ -12,9 +12,9 @@ TotallyLegit3D is a real-time software rasterizer written entirely in Java using
 - Custom (hacked) buffering that reduces screen-blit time by 2–3× (over StdDraw).
 - Zero in flight allocation architecture, bypassing GC pressure.
 - Multithreaded raster and vertex stage.
+
 _Using Java reflections to obtain access to the private BufferImage under StdDraw_
 <img width="786" height="115" alt="image" src="https://github.com/user-attachments/assets/cffb6a15-80d7-49e2-9eab-4f2ffd55497b" />
-
 ## Benchmarks
 Textured Benchmarks:
 House (478 triangles) (textured, no backface culling): ~200 FPS (Ryzen 7, 5825U, 8 threads)
