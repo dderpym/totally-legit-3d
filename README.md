@@ -1,20 +1,22 @@
 # TotallyLegit3D — A Fast CPU Software Rasterizer in Java
+TotallyLegit3D is a real-time 3D software rasterizer built entirely within the constraints of UC Berkeley's CS61B standard library (StdDraw). TotallyLegit implements its own high performance linear algebra and quaternion library to accomplish this task. It achieves competitive performance for a software rasterizer.
 
-TotallyLegit3D is a real-time software rasterizer written entirely in Java using the standard libraries of UC Berkeley's CS61B. It does not make use of GPU calls through libraries like OpenGL and Vulkan. StdDraw operates through Java Swing, and TotallyLegit utilizes Java reflections to achieve substantially faster performance on the normal StdDraw pannel. Despite relying on CPU-only rendering, the engine achieves reasonable performance under fairly high poly counts.
-
-## Real-Time CPU Rendering
+## Features
 - Custom vertex processing, raster, depth buffering, and color output.
 - Supports STL and OBJ meshes in configurable render scenes.
 - Fully supports diffuse UV textures on obj models.
 - Barycentric raster pipeline with backface culling.
+- Clipping algorithm (Sutherland-Hodgman) to improve visual fidelity of objects that clip into the near plane.
+
 ## Performance
-- Uses Java reflection to access private StdDraw buffers, reducing 1 million random-pixel-write time from 235 ms → 4.5 ms (~50× faster).
+- Implements direct buffer access patterns via Java reflection API, bypassing standard draw call overhead and achieving a ~50× performance multiplier in pixel throughput (~50× faster).
 - Custom (hacked) buffering that reduces screen-blit time by 2–3× (over StdDraw).
 - Zero in flight allocation architecture, bypassing GC pressure.
 - Multithreaded raster and vertex stage.
 
-_Using Java reflections to obtain access to the private BufferImage under StdDraw_
+_Using the Java reflection API to obtain access to the private BufferedImage under StdDraw_
 <img width="786" height="115" alt="image" src="https://github.com/user-attachments/assets/cffb6a15-80d7-49e2-9eab-4f2ffd55497b" />
+
 ## Benchmarks
 Textured Benchmarks:
 House (478 triangles) (textured, no backface culling): ~200 FPS (Ryzen 7, 5825U, 8 threads)
@@ -39,14 +41,21 @@ Dragon (37986 triangles): 300 FPS (Apple Silicon M3, 4 threads)
 - Raster Stage: Multithreaded in horizontal strips. Tile rendering with a small cacheable array for better cache locality is planned.
 - Vertex Stage: Fully multithreaded.
 
+## Development Constraints
+- No GPU access (no OpenGL, Vulkan, DirectX, Metal).
+- Limited to CS61B standard library (StdDraw via Java Swing).
+- All rendering, rasterization, and buffer management implemented from scratch.
+- No external graphics or math libraries.
+
 ## Running and building
 As this was a school project, I've created this similar to the rest of the projects in the same class. Thus, the build tooling is quite lacking.
-I will eventually add proper tooling to this, however, in the meantime:
+I will eventually add proper tooling to this, however, in the meantime there are two options to build and run this:
 
 ### Option 1: IntelliJ (recommended)
-Open the project in IntelliJ and add the CS61B `algs4.jar` library manually.
+Open the project in IntelliJ and add the CS61B `algs4.jar` library manually. The exact setup on my machine is a subet of the steps [https://fa25.datastructur.es/homeworks/hw01/#task-5-cloning-repositories](here). 
 
 ### Option 2: Command Line
+Refer to the cloning repository part of the above step to get algs4.jar.
 From the project root:
 ```
 cd src
