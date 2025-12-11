@@ -32,6 +32,7 @@ public class Main {
     private static double currentFPS = 0.0;
 
     public static void main(String[] args) {
+        StdDraw.setCanvasSize(X, Y);
         StdDraw.setXscale(0, X);
         StdDraw.setYscale(Y, 0);
         StdDraw.enableDoubleBuffering();
@@ -41,8 +42,8 @@ public class Main {
         world = new World();
 
         try {
-            benchmarkMesh = OBJLoader.load("models/quad.obj");
-            benchmarkMesh.texture = new UVTexture("models/default_texture.png");
+            benchmarkMesh = OBJLoader.load("models/house.obj");
+            benchmarkMesh.texture = new UVTexture("models/house.png");
             world.addMesh(benchmarkMesh);
         }
         catch (IOException e) {
